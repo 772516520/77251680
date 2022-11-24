@@ -76,6 +76,14 @@ public class HexFormat {
         return bytes;
     }
 
+    public String formatHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte i : bytes) {
+            sb.append(String.format("%02x", i));
+        }
+        return new String(sb);
+    }
+
     private static int fromHexDigits(CharSequence string, int index) {
         int high = fromHexDigit(string.charAt(index));
         int low = fromHexDigit(string.charAt(index + 1));
@@ -110,4 +118,5 @@ public class HexFormat {
         return string.replace("\n", "\\n")
                 .replace("\r", "\\r");
     }
+
 }
