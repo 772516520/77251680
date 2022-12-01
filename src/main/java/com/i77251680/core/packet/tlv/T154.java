@@ -7,6 +7,6 @@ import java.io.IOException;
 public class T154 {
     public static Writer writeT154(int seq) throws IOException {
         return new Writer()
-                .writeInt(seq);
+                .writeInt(seq + 1);
     }
 }

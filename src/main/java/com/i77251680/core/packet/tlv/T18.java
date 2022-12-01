@@ -9,7 +9,7 @@ public class T18 {
         return new Writer()
                 .writeShort(1)
                 .writeInt(1536)
-                .writeByte(appid)
+                .writeInt(appid)
                 .writeInt(0)
                 .writeInt(uin)
                 .writeShort(0)
