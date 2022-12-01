@@ -38,7 +38,7 @@ public class T106 {
                 .writeShort(0)
                 .read();
         byte[] uin_buf = new Writer().writeInt(uin).read();
-        byte[] key = Md5Crypto.encryptbuf(ArrayUtils.concat(md5pass, Constants.BUF4, uin_buf));
+        byte[] key = Md5Crypto.encrypt(ArrayUtils.concat(md5pass, Constants.BUF4, uin_buf));
         return new Writer()
                 .writeBytes(new Tea().encrypt(body, key));
     }
