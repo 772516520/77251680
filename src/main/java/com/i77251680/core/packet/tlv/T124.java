@@ -11,7 +11,7 @@ public class T124 {
                 .writeTlv(release)
                 .writeShort(2)
                 .writeTlv(sim)
-                .writeShort(0)
+                .writeShort(0) // allays byte[0]
                 .writeTlv(apn);
     }
 }

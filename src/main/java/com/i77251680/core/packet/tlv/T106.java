@@ -16,24 +16,26 @@ public class T106 {
             byte[] md5pass,
             byte[] tgtgt,
             byte[] guid,
-            int subid) throws IOException {
+            int subid,
+            int ssoVersion
+    ) throws IOException {
         byte[] body = new Writer()
                 .writeShort(4)
                 .writeBytes(Utils.randomBytes())
-                .writeInt(7)
+                .writeInt(ssoVersion)
                 .writeInt(appid)
                 .writeInt(0)
                 .writeLong(uin)
-                .writeInt(Utils.DATE & 0xffffffff)
-                .writeInt(0)
-                .writeByte(1)
+                .writeInt(Utils.DATE)
+                .writeBytes(Constants.BUF4)
+                .writeByte(1) // isSavePassword
                 .writeBytes(md5pass)
                 .writeBytes(tgtgt)
                 .writeInt(0)
                 .writeByte(1)
                 .writeBytes(guid)
                 .writeInt(subid)
-                .writeInt(1)
+                .writeInt(1) // Login Type 1:pwd 3:SMS 4:微信一键登录
                 .writeTlv(String.valueOf(uin))
                 .writeShort(0)
                 .read();

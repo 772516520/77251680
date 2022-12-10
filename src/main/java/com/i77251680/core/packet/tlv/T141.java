@@ -9,7 +9,7 @@ public class T141 {
         return new Writer()
                 .writeShort(1)
                 .writeTlv(sim)
-                .writeShort(2)
+                .writeShort(2) // network Type 1:数据 2：wifi 0:any type
                 .writeTlv(apn);
     }
 }
