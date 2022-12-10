@@ -11,7 +11,7 @@ public class T1 {
                 .writeShort(1)
                 .writeBytes(Utils.randomBytes())
                 .writeInt(uin)
-                .writeInt(Utils.DATE & 0xffffffff)
+                .writeInt(Utils.DATE)
                 .writeBytes(new byte[4])
                 .writeShort(0);
     }
