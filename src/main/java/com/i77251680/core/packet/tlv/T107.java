@@ -10,6 +10,6 @@ public class T107 {
                 .writeShort(0)
                 .writeByte(0)
                 .writeShort(0)
-                .writeShort(1);
+                .writeByte(1);
     }
 }

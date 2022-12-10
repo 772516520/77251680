@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class T128 {
-    public static Writer writeT128(String device, byte[] guid, String brand) throws IOException {
+    public static Writer writeT128(String model, byte[] guid, String brand) throws IOException {
         return new Writer()
                 .writeShort(0)
                 .writeByte(0)
                 .writeByte(1)
                 .writeByte(0)
                 .writeInt(16777216)
-                .writeTlv(device)
+                .writeTlv(model)
                 .writeTlv(Arrays.copyOfRange(guid, 0, 16))
                 .writeTlv(brand);
     }

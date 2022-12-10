@@ -8,6 +8,6 @@ import java.io.IOException;
 public class T188 {
     public static Writer writeT188(String android_id) throws IOException {
         return new Writer()
-                .writeTlv(Md5Crypto.encrypt(android_id));
+                .writeBytes(Md5Crypto.encrypt(android_id));
     }
 }
