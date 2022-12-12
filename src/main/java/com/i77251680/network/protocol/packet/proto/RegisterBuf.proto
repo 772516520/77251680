@@ -1,0 +1,17 @@
+syntax = "proto2";
+option java_outer_classname = "RegisterBuf";
+
+message reg_buf {
+  required buf1 buf1 = 1;
+  required buf2 buf2 = 2;
+}
+
+message buf1 {
+  required int32 const46 = 1;
+  required int32 Date = 2;
+}
+
+message buf2 {
+  required int32 const283 = 1;
+  required int32 const0 = 2;
+}

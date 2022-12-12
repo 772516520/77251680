@@ -1,0 +1,14 @@
+syntax = "proto2";
+option java_outer_classname = "Tlv52D";
+
+message buf {
+  required string bootloader = 1;
+  required string proc_version = 2;
+  required string version_codename = 3;
+  required int64 version_incremental = 4;
+  required string fingerprint = 5;
+  required string boot_id = 6;
+  required string android_id = 7;
+  required string baseband = 8;
+  required int64 version_incremental_ = 9;
+}
