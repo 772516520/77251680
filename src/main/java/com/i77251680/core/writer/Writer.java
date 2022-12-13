@@ -14,28 +14,35 @@ public class Writer {
         this.byteArrayOutputStream = new ByteArrayOutputStream();
     }
 
-    public Writer writeU8(int v) throws IOException {
+    public Writer writeByte(int v) throws IOException {
         ByteBuf byteBuf = buffer(1);
         byteBuf.writeByte(v);
         this.byteArrayOutputStream.write(byteBuf.array());
         return this;
     }
 
-    public Writer writeU16(int v) throws IOException {
+    public Writer writeShort(int v) throws IOException {
         ByteBuf byteBuf = buffer(2);
         byteBuf.writeShort(v);
         this.byteArrayOutputStream.write(byteBuf.array());
         return this;
     }
 
-    public Writer writeU32(int v) throws IOException {
+    public Writer writeInt(int v) throws IOException {
         ByteBuf byteBuf = buffer(4);
         byteBuf.writeInt(v);
         this.byteArrayOutputStream.write(byteBuf.array());
         return this;
     }
 
-    public Writer writeU64(int v) throws IOException {
+    public Writer writeInt(long v) throws IOException {
+        ByteBuf byteBuf = buffer(4);
+        byteBuf.writeInt(new Long(v).intValue());
+        this.byteArrayOutputStream.write(byteBuf.array());
+        return this;
+    }
+
+    public Writer writeLong(int v) throws IOException {
         ByteBuf byteBuf = buffer(8);
         byteBuf.writeLong(v);
         this.byteArrayOutputStream.write(byteBuf.array());
@@ -43,8 +50,8 @@ public class Writer {
     }
 
     public Writer writeLong(long v) throws IOException {
-        ByteBuf byteBuf = buffer(4);
-        byteBuf.writeInt(new Long(v).intValue());
+        ByteBuf byteBuf = buffer(8);
+        byteBuf.writeLong(v);
         this.byteArrayOutputStream.write(byteBuf.array());
         return this;
     }
@@ -61,17 +68,17 @@ public class Writer {
 
     public <T> Writer writeTlv(T v) throws IOException {
         if (v instanceof String)
-            this.writeU16(((String) v).length()).writeBytes(v);
+            this.writeShort(((String) v).length()).writeBytes(v);
         else
-            this.writeU16(((byte[]) v).length).writeBytes(v);
+            this.writeShort(((byte[]) v).length).writeBytes(v);
         return this;
     }
 
     public <T> Writer writeWithLength(T v) throws IOException {
         if (v instanceof String)
-            this.writeU32(((String) v).length() + 4).writeBytes(v);
+            this.writeInt(((String) v).length() + 4).writeBytes(v);
         else
-            this.writeU32(((byte[]) v).length + 4).writeBytes(v);
+            this.writeInt(((byte[]) v).length + 4).writeBytes(v);
         return this;
     }
 
