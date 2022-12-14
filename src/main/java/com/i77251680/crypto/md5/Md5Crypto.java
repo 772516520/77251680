@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class Md5Crypto {
     public static byte[] encrypt(String v) {
-        MessageDigest md5 = null;
+        MessageDigest md5;
         try {
             md5 = MessageDigest.getInstance("MD5");
             md5.update(v.getBytes());
@@ -15,8 +15,8 @@ public class Md5Crypto {
         }
     }
 
-    public static byte[] encryptbuf(byte[] v) {
-        MessageDigest md5 = null;
+    public static byte[] encrypt(byte[] v) {
+        MessageDigest md5;
         try {
             md5 = MessageDigest.getInstance("MD5");
             md5.update(v);
