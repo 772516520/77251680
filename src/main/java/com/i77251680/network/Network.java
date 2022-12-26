@@ -31,7 +31,7 @@ public class Network {
     private final long uin;
     private final FullDevice fullDevice;
     private final Platform platform;
-    private final Timer timer;
+    private Timer timer;
     private static final String default_host = "msfwifi.3g.qq.com";
     private static final int default_port = 8080;
     private Socket socket;
@@ -55,11 +55,14 @@ public class Network {
 
     public void sendPkt(byte[] pkt) {
         try {
-            if (isOnline)
+            if (!socket.isClosed())
                 outputStream.write(pkt);
             else {
                 log.warn("closed");
+                log.error(String.valueOf(socket.isClosed()));
                 log.warn("尝试重连");
+                timer.cancel();
+                timer = new Timer();
                 socket = new Socket(default_host, default_port);
                 this.inputStream = socket.getInputStream();
                 this.outputStream = socket.getOutputStream();
@@ -120,14 +123,13 @@ public class Network {
                     System.out.println("[发送] 心跳");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    timer.cancel();
                 }
 //                }).start();
             }
         }, hb480_interval, hb480_interval);
 
 //        new Thread(() -> {
-        while (isOnline) {
+        while (!socket.isClosed()) {
             try {
                 int len = inputStream.read(buf);
                 byte[] buf_ = Arrays.copyOf(buf, len);
