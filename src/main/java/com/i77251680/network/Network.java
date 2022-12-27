@@ -70,7 +70,7 @@ public class Network {
                 outputStream.write(pkt);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -144,9 +144,9 @@ public class Network {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
+                register();
                 isOnline = false;
                 e.printStackTrace();
-                register();
             }
         }
 //        }).start();
