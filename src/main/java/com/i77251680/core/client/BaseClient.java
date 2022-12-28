@@ -22,6 +22,7 @@ import com.i77251680.network.protocol.packet.login.verify.sms.BuildSubmitSmsCode
 import com.i77251680.network.protocol.packet.pack.PackTlv;
 import com.i77251680.network.protocol.packet.tlv.*;
 import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
+import com.i77251680.network.protocol.packet.unpack.tlv.ReadTlv;
 import io.netty.buffer.ByteBuf;
 
 import java.io.File;
@@ -48,7 +49,7 @@ public class BaseClient extends BaseClientImpl {
         this.platform = config.platform;
         this.fullDevice = new FullDevice(uin);
         try {
-            network = new Network(uin, fullDevice, platform.subid, hb480_interval);
+            network = new Network(uin, fullDevice, platform, hb480_interval);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,7 +94,7 @@ public class BaseClient extends BaseClientImpl {
             buf.readBytes(bytes);
             byte[] qrsig = bytes;
             buf.readBytes(2);
-            Map<Integer, ByteBuf> t = network.readTlv(buf);
+            Map<Integer, ByteBuf> t = ReadTlv.read(buf);
             if (retcode == 0 && t.containsKey(0x17)) {
                 Sig.qrsig = qrsig;
                 File file = new File("F:\\dev\\devbot\\qrcode.png");
@@ -197,7 +198,7 @@ public class BaseClient extends BaseClientImpl {
                 buf.readBytes(4);
                 uin = buf.readUnsignedInt();
                 buf.readBytes(6);
-                Map<Integer, ByteBuf> t = network.readTlv(buf);
+                Map<Integer, ByteBuf> t = ReadTlv.read(buf);
                 t106 = t.get(0x18).array();
                 t16a = t.get(0x19).array();
                 t318 = t.get(0x65).array();
