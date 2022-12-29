@@ -15,11 +15,11 @@ public class JceConstants {
     public static final byte TYPE_STRUCT_END = 11;
     public static final byte TYPE_ZERO = 12;
     public static final byte TYPE_SIMPLE_LIST = 13;
-
     public static final byte TAG_MAP_K = 0;
     public static final byte TAG_MAP_V = 1;
     public static final byte TAG_LIST_E = 0;
     public static final byte TAG_BYTES = 0;
     public static final byte TAG_LENGTH = 0;
     public static final byte TAG_STRUCT_END = 0;
+    public static final String FLAG_STRUCT_END = "FLAG_STRUCT_END";
 }
