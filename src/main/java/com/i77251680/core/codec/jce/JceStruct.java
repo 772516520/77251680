@@ -77,6 +77,9 @@ public class JceStruct {
             case Type.byteArray:
                 type = JceConstants.TYPE_SIMPLE_LIST;
                 break;
+            case Type.JceList:
+                type = JceConstants.TYPE_LIST;
+                break;
             case Type.JceMap:
                 type = JceConstants.TYPE_MAP;
                 break;
