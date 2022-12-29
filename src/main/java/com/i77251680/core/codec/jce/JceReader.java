@@ -3,12 +3,10 @@ package com.i77251680.core.codec.jce;
 import com.i77251680.Exceptions.JceException;
 import com.i77251680.entity.Jce.JceElement;
 import com.i77251680.entity.Jce.JceHead;
+import com.i77251680.utils.JudgeType;
 import io.netty.buffer.ByteBuf;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class JceReader {
     public static JceHead readHead(ByteBuf buf) {
@@ -46,7 +44,7 @@ public class JceReader {
             case JceConstants.TYPE_STRUCT_BEGIN:
                 return readJceStruct(buf);
             case JceConstants.TYPE_STRUCT_END:
-                return JceConstants.TYPE_STRUCT_END;
+                return JceConstants.FLAG_STRUCT_END;
             case JceConstants.TYPE_FLOAT:
                 return readFloat(buf);
             case JceConstants.TYPE_DOUBLE:
@@ -101,21 +99,35 @@ public class JceReader {
     }
 
     public static List<Object> readJceList(ByteBuf buf) {
-        int len = (int) readElement(buf).value;
-        List<Object> list = new ArrayList<Object>();
-        while (len > 0) {
+        int len_;
+        Object len = readElement(buf).value;
+        if (Objects.equals(JudgeType.getType(len), "Byte"))
+            len_ = (Byte) len;
+        else if (Objects.equals(JudgeType.getType(len), "Short"))
+            len_ = (Short) len;
+        else
+            len_ = (int) len;
+        List<Object> list = new ArrayList<>();
+        while (len_ > 0) {
             list.add(readElement(buf).value);
-            --len;
+            --len_;
         }
         return list;
     }
 
     public static Map<Object, Object> readJceMap(ByteBuf buf) {
-        int len = (int) readElement(buf).value;
+        int len_;
+        Object len = readElement(buf).value;
+        if (Objects.equals(JudgeType.getType(len), "Byte"))
+            len_ = (Byte) len;
+        else if (Objects.equals(JudgeType.getType(len), "Short"))
+            len_ = (Short) len;
+        else
+            len_ = (int) len;
         Map<Object, Object> map = new HashMap<>();
-        while (len > 0) {
+        while (len_ > 0) {
             map.put(readElement(buf).value, readElement(buf).value);
-            --len;
+            --len_;
         }
         return map;
     }
@@ -126,7 +138,7 @@ public class JceReader {
             JceElement jceElement = readElement(buf);
             Object tag = jceElement.tag;
             Object value = jceElement.value;
-            if (value.equals(JceConstants.TYPE_STRUCT_END)) {
+            if (value.equals(JceConstants.FLAG_STRUCT_END)) {
                 break;
             } else {
                 struct.put(tag, value);
@@ -137,8 +149,14 @@ public class JceReader {
 
     public static byte[] readJceSimpleList(ByteBuf buf) {
         readHead(buf);
-        int len = (int) readElement(buf).value;
-        byte[] buffer = new byte[len];
+        byte[] buffer;
+        Object len = readElement(buf).value;
+        if (Objects.equals(JudgeType.getType(len), "Byte"))
+            buffer = new byte[(Byte) len];
+        else if (Objects.equals(JudgeType.getType(len), "Short"))
+            buffer = new byte[(Short) len];
+        else
+            buffer = new byte[(int) len];
         buf.readBytes(buffer);
         return buffer;
     }
