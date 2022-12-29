@@ -4,10 +4,7 @@ import com.i77251680.entity.Jce.JceElement;
 import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
@@ -58,8 +55,11 @@ public class Jce {
         return JceStruct.encode(encodeList);
     }
 
-    public static void decodeWrapper(byte[] encoded) {
-        ByteBuf buf = wrappedBuffer(encoded);
+    public static Map<Object, Object> decodeWrapper(byte[] encoded) {
+        Map<Object, Object> wrapper = decode(encoded);
+        Map<Object, Object> map = (Map) decode((byte[]) wrapper.get(7)).get(0);
+        Set<Object> keys = map.keySet();
+        return decode((byte[]) map.get(keys.iterator().next()));
     }
 
     public static Map<Object, Object> decode(byte[] encoded) {
