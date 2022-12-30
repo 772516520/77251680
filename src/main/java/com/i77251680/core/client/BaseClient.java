@@ -36,8 +36,8 @@ import static io.netty.buffer.Unpooled.wrappedBuffer;
 public class BaseClient extends BaseClientImpl {
     protected long uin;
     protected Network network;
-    protected FullDevice fullDevice;
-    protected Platform platform;
+    public FullDevice fullDevice;
+    public Platform platform;
     private final int hb480_interval;
 
     public BaseClient(long uin, Config config) {
