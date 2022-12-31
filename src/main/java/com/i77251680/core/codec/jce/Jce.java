@@ -9,11 +9,11 @@ import java.util.*;
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 public class Jce {
-    public static byte[] encodeWrapper(byte[] v, String serverPush, String cmd) throws IOException {
+    public static byte[] encodeWrapper(byte[] v, String serverPush, String fun) throws IOException {
         List<Object> list = new ArrayList<>();
         List<Object> list_ = new ArrayList<>();
         Map<Object, Object> JceMap = new HashMap<>();
-        JceMap.put(cmd, v);
+        JceMap.put(fun, v);
         list_.add(JceMap);
         list.add(null);
         list.add((byte) 3);
@@ -21,7 +21,7 @@ public class Jce {
         list.add(0);
         list.add((byte) 0);
         list.add(serverPush);
-        list.add(cmd);
+        list.add(fun);
         list.add(JceStruct.encode(list_));
         list.add(0);
         list.add(new HashMap<>());
@@ -29,11 +29,11 @@ public class Jce {
         return JceStruct.encode(list);
     }
 
-    public static byte[] encodeWrapper(byte[] v, String serverPush, String cmd, byte reqid) throws IOException {
+    public static byte[] encodeWrapper(byte[] v, String serverPush, String fun, byte reqid) throws IOException {
         List<Object> list = new ArrayList();
         List<Object> list_ = new ArrayList();
         Map<Object, Object> JceMap = new HashMap<>();
-        JceMap.put(cmd, v);
+        JceMap.put(fun, v);
         list_.add(JceMap);
         list.add(null);
         list.add((byte) 3);
@@ -41,7 +41,7 @@ public class Jce {
         list.add(0);
         list.add(reqid);
         list.add(serverPush);
-        list.add(cmd);
+        list.add(fun);
         list.add(JceStruct.encode(list_));
         list.add(0);
         list.add(new HashMap<>());
