@@ -1,6 +1,6 @@
 package com.i77251680.core.codec.jce;
 
-import com.i77251680.Exceptions.JceException;
+import com.i77251680.exceptions.JceException;
 import com.i77251680.utils.ArrayUtils;
 import com.i77251680.utils.JudgeType;
 
