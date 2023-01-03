@@ -4,6 +4,7 @@ import com.i77251680.event.base.IPublisher;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Publisher implements IPublisher {
     private String publisherName;
@@ -25,7 +26,7 @@ public class Publisher implements IPublisher {
     @Override
     public void broadcast(String eventName, Object data) {
         for (Subscriber subscriber : subscriberList) {
-            if (eventName == subscriber.getEventName())
+            if (Objects.equals(eventName, subscriber.getEventName()))
                 subscriber.onReceive(eventName, data);
         }
     }
