@@ -2,6 +2,7 @@ package com.i77251680.network.protocol.packet.login;
 
 import com.i77251680.core.writer.Writer;
 import com.i77251680.entity.device.FullDevice;
+import com.i77251680.entity.enums.LoginType;
 import com.i77251680.network.protocol.packet.pack.PackTlv;
 import com.i77251680.network.protocol.packet.tlv.*;
 
@@ -11,7 +12,7 @@ public class PasswordLogin {
     public static byte[] pack(
             long uin,
             int appid,
-            int loginType,
+            LoginType loginType,
             byte[] md5pass,
             byte[] tgtgt,
             int subid,
@@ -32,7 +33,7 @@ public class PasswordLogin {
                 .writeShort(22)
                 .writeBytes(PackTlv.pack(0x18, T18.writeT18(uin, appid)))
                 .writeBytes(PackTlv.pack(0x01, T1.writeT1(uin)))
-                .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType, md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
+                .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType.getType(), md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x116, T116.writeT116(bitmap, subSigMap)))
                 .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, bitmap, mainSigMap, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x107, T107.writeT107()))
@@ -58,7 +59,7 @@ public class PasswordLogin {
     public static byte[] pack(
             long uin,
             int appid,
-            int loginType,
+            LoginType loginType,
             byte[] md5pass,
             byte[] tgtgt,
             int subid,
@@ -80,7 +81,7 @@ public class PasswordLogin {
                 .writeShort(allowSlider ? 0x18 : 0x17)
                 .writeBytes(PackTlv.pack(0x18, T18.writeT18(uin, appid)))
                 .writeBytes(PackTlv.pack(0x01, T1.writeT1(uin)))
-                .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType, md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
+                .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType.getType(), md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x116, T116.writeT116(bitmap, subSigMap)))
                 .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, bitmap, mainSigMap, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x107, T107.writeT107()))
