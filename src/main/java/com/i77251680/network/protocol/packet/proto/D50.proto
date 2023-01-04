@@ -1,0 +1,11 @@
+syntax = "proto2";
+option java_outer_classname = "D50_";
+
+message d50{
+  required int32 const10002 = 1;
+  required int32 const91001 = 91001;
+  required int32 const101001 = 101001;
+  required int32 const151001 = 151001;
+  required int32 const181001 = 181001;
+  required int32 const251001 = 251001;
+}
