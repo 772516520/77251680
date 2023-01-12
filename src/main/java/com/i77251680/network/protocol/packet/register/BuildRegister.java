@@ -1,4 +1,4 @@
-package com.i77251680.network.protocol.packet.Register;
+package com.i77251680.network.protocol.packet.register;
 
 import com.i77251680.core.codec.jce.Jce;
 import com.i77251680.core.codec.protobuf.Register;
