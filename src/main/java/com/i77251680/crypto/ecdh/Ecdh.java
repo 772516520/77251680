@@ -17,7 +17,7 @@ public class Ecdh {
     private final byte[] byteKey = ArrayUtils.concat(X509_PREFIX, HexFormat.of().parseHex(i77251680_PUBLIC_KEY));
     private final PublicKey key;
     private final KeyPairGenerator clientPair;
-    KeyPair keyPair;
+    private final KeyPair keyPair;
 
     public final byte[] publicKey;
     public final byte[] shareKey;
