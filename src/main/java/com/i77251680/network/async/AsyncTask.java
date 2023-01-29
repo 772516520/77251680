@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class AsyncTask<T> extends AbstractAsyncTask<T> {
+public class AsyncTask<T> extends AbstractAsyncTask<T> implements Task<T> {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
     private static final String PENDING = "PENDING";
     private static final String FULFILLED = "FULFILLED";
