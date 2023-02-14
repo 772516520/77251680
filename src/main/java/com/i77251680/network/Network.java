@@ -1,7 +1,5 @@
 package com.i77251680.network;
 
-import com.i77251680.Exceptions.PacketException;
-import com.i77251680.Exceptions.SSOException;
 import com.i77251680.constants.Constants;
 import com.i77251680.core.client.Sig;
 import com.i77251680.core.codec.protobuf.Heartbeat;
@@ -10,6 +8,8 @@ import com.i77251680.entity.device.FullDevice;
 import com.i77251680.entity.enums.Platform;
 import com.i77251680.entity.packet.sso.SSO;
 import com.i77251680.event.GlobalEventListener;
+import com.i77251680.exceptions.PacketException;
+import com.i77251680.exceptions.SSOException;
 import com.i77251680.network.protocol.packet.register.Register;
 import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
 import com.i77251680.network.protocol.packet.unpack.login.DecodeLoginResponse;
@@ -59,7 +59,6 @@ public class Network {
                 outputStream.write(pkt);
             else {
                 log.warn("closed");
-                log.error(String.valueOf(socket.isClosed()));
                 log.warn("尝试重连");
                 timer.cancel();
                 timer = new Timer();
