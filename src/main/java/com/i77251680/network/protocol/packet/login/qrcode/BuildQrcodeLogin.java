@@ -89,8 +89,7 @@ public class BuildQrcodeLogin {
                 .writeBytes(PackTlv.pack(0x144, T144.writeT144(fullDevice, tgtgt)))
                 .writeBytes(PackTlv.pack(0x145, T145.writeT145(fullDevice.guid)))
                 .writeBytes(PackTlv.pack(0x147, T147.writeT147(appid, ver, sign)))
-                .writeShort(0x16a)
-                .writeTlv(t16a)
+                .writeBytes(PackTlv.pack(0x16a, t16a))
                 .writeBytes(PackTlv.pack(0x154, T154.writeT154(Sig.seq)))
                 .writeBytes(PackTlv.pack(0x141, T141.writeT141(fullDevice.sim, fullDevice.apn)))
                 .writeBytes(PackTlv.pack(0x08, T8.writeT8()))
@@ -103,8 +102,7 @@ public class BuildQrcodeLogin {
                 .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildtime, sdkver)))
                 .writeBytes(PackTlv.pack(0x516, T516.writeT516()))
                 .writeBytes(PackTlv.pack(0x521, T521.writeT521()))
-                .writeShort(0x318)
-                .writeTlv(t318)
+                .writeBytes(PackTlv.pack(0x318, t318))
                 .read();
     }
 }

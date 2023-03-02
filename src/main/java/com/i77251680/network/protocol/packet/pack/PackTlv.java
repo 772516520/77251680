@@ -9,16 +9,14 @@ public class PackTlv {
         byte[] bytes = buf.read();
         return new Writer()
                 .writeShort(tag)
-                .writeShort(bytes.length)
-                .writeBytes(bytes)
+                .writeTlv(bytes)
                 .read();
     }
 
     public static byte[] pack(int tag, byte[] buf) throws IOException {
         return new Writer()
                 .writeShort(tag)
-                .writeShort(buf.length)
-                .writeBytes(buf)
+                .writeTlv(buf)
                 .read();
     }
 }
