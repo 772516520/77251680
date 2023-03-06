@@ -90,7 +90,7 @@ public class HexFormat {
         return (high << 4) | low;
     }
 
-    public static int fromHexDigit(int ch) {
+    private static int fromHexDigit(int ch) {
         int value;
         if ((ch >>> 8) == 0 && (value = DIGITS[ch]) >= 0) {
             return value;
