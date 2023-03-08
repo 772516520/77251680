@@ -5,7 +5,7 @@ import com.i77251680.core.client.BaseClient;
 import com.i77251680.core.client.Sig;
 import com.i77251680.core.writer.Writer;
 import com.i77251680.crypto.tea.Tea;
-import com.i77251680.entity.enums.Platforms;
+import com.i77251680.entity.enums.Platform;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public class BuildLoginPacket {
         if (cmd.equals("wtlogin.trans_emp")) {
             uin = 0;
             cmdid = 0x812;
-            subid = Platforms.watch.subid;
+            subid = Platform.Watch.subid;
         }
         if (type == 2) {
             body = new Writer()

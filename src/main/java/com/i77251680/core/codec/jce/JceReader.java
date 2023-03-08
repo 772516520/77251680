@@ -1,7 +1,5 @@
 package com.i77251680.core.codec.jce;
 
-import com.i77251680.entity.Jce.JceElement;
-import com.i77251680.entity.Jce.JceHead;
 import com.i77251680.exceptions.JceException;
 import com.i77251680.utils.JudgeType;
 import io.netty.buffer.ByteBuf;

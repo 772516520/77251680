@@ -6,10 +6,10 @@ public enum MusicPlatform {
     migu("migu", "cmccwm.mobilemusic", "6cdc72a439cef99a3418d2a78aa28c73", "咪咕音乐"),
     kugou("kugou", "com.kugou.android", "fe4a24d80fcf253a00676a808f62c2c6", "酷狗音乐"),
     kuwo("kuwo", "cn.kuwo.player", "bf9ff4ffb4c558a34ee3fd52c223ebf5", "酷我音乐");
-    private String platform;
-    private String appName;
-    private String sign;
-    private String remark;
+    private final String platform;
+    private final String appName;
+    private final String sign;
+    private final String remark;
 
     MusicPlatform(String platform, String appName, String sign, String remark) {
         this.platform = platform;

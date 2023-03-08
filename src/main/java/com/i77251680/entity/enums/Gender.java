@@ -2,8 +2,8 @@ package com.i77251680.entity.enums;
 
 public enum Gender {
     male(1, "male"), female(0, "female"), unknown(2, "unknown");
-    private int sex;
-    private String remark;
+    private final int sex;
+    private final String remark;
 
     Gender(int sex, String remark) {
         this.sex = sex;

@@ -1,4 +1,4 @@
-package com.i77251680.entity.Jce;
+package com.i77251680.core.codec.jce;
 
 public class JceHead {
     public Object tag;

@@ -2,8 +2,8 @@ package com.i77251680.entity.enums;
 
 public enum GroupRole {
     owner(1, "owner"), admin(2, "admin"), member(0, "member");
-    private int permissions;
-    private String remark;
+    private final int permissions;
+    private final String remark;
 
     GroupRole(int permissions, String remark) {
         this.permissions = permissions;
