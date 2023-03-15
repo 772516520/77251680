@@ -58,7 +58,12 @@ public class Jce {
         Map<Object, Object> wrapper = decode(encoded);
         Map<Object, Object> map = (Map) decode((byte[]) wrapper.get(7)).get(0);
         Set<Object> keys = map.keySet();
-        return decode((byte[]) map.get(keys.iterator().next()));
+        Object nested = map.get(keys.iterator().next());
+        if (!(nested instanceof byte[])) {
+            keys = ((Map) nested).keySet();
+            nested = ((Map) nested).get(keys.iterator().next());
+        }
+        return (Map) decode((byte[]) nested).get(0);
     }
 
     public static Map<Object, Object> decode(byte[] encoded) {
