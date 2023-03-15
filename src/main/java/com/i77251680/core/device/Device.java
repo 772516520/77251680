@@ -10,8 +10,7 @@ import java.util.Arrays;
 import static io.netty.buffer.Unpooled.buffer;
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
-public class Device implements Platform {
-    @Override
+public class Device {
     public String generateImei(Long uin) {
         String imei = uin % 2 == 0 ? "86" : "35";
         ByteBuf buf = buffer(4);
@@ -34,17 +33,14 @@ public class Device implements Platform {
         return imei.length() == 15 ? imei : imei + calcSP(imei);
     }
 
-    @Override
     public ShortDevice generateShortDevice(Long uin) {
         return new ShortDevice(uin);
     }
 
-    @Override
     public FullDevice generateFullDevice(Long uin) {
         return new FullDevice(uin);
     }
 
-    @Override
     public int calcSP(String imei) {
         int sum = 0;
         for (int i = 0; i < imei.length(); ++i) {

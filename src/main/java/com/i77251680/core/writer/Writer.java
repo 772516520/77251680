@@ -8,51 +8,51 @@ import java.io.IOException;
 import static io.netty.buffer.Unpooled.buffer;
 
 public class Writer {
-    private final ByteArrayOutputStream byteArrayOutputStream;
+    private final ByteArrayOutputStream b;
 
     public Writer() {
-        this.byteArrayOutputStream = new ByteArrayOutputStream();
+        this.b = new ByteArrayOutputStream();
     }
 
     public Writer writeByte(int v) throws IOException {
         ByteBuf byteBuf = buffer(1);
         byteBuf.writeByte(v);
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
     public Writer writeShort(int v) throws IOException {
         ByteBuf byteBuf = buffer(2);
         byteBuf.writeShort(v);
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
     public Writer writeInt(int v) throws IOException {
         ByteBuf byteBuf = buffer(4);
         byteBuf.writeInt(v);
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
     public Writer writeInt(long v) throws IOException {
         ByteBuf byteBuf = buffer(4);
         byteBuf.writeInt(new Long(v).intValue());
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
     public Writer writeLong(int v) throws IOException {
         ByteBuf byteBuf = buffer(8);
         byteBuf.writeLong(v);
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
     public Writer writeLong(long v) throws IOException {
         ByteBuf byteBuf = buffer(8);
         byteBuf.writeLong(v);
-        this.byteArrayOutputStream.write(byteBuf.array());
+        this.b.write(byteBuf.array());
         return this;
     }
 
@@ -62,7 +62,7 @@ public class Writer {
             buf = ((String) v).getBytes();
         else
             buf = (byte[]) v;
-        this.byteArrayOutputStream.write(buf);
+        this.b.write(buf);
         return this;
     }
 
@@ -83,6 +83,16 @@ public class Writer {
     }
 
     public byte[] read() {
-        return this.byteArrayOutputStream.toByteArray();
+        return this.b.toByteArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        for (byte b : b.toByteArray()) {
+            if (Integer.toHexString(b & 0xff).length() < 2) s.append(0);
+            s.append(Integer.toHexString(b & 0xff));
+        }
+        return s.toString();
     }
 }

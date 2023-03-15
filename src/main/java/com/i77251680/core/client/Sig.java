@@ -1,7 +1,8 @@
 package com.i77251680.core.client;
 
 import com.i77251680.constants.Constants;
-import com.i77251680.utils.Utils;
+import com.i77251680.crypto.ecdh.Ecdh;
+import com.i77251680.utils.Random;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
@@ -16,11 +17,17 @@ public class Sig {
     public static byte[] t403 = Constants.BUF0;
     public static byte[] G = Constants.BUF0;
     public static byte[] qrsig = Constants.BUF0;
-    public static byte[] publicKey = Constants.BUF0;
-    public static byte[] shareKey = Constants.BUF0;
-    public static byte[] tgtgt = Utils.randomBytes(16);
-    public static byte[] randkey = Utils.randomBytes(16);
-    public static byte[] session = Utils.randomBytes(4);
-    public static int seq = wrappedBuffer(Utils.randomBytes()).readInt() & 0xfff;
+    public static byte[] publicKey;
+    public static byte[] shareKey;
+    public static byte[] tgtgt = Random.randomBytes(16);
+    public static byte[] randKey = Random.randomBytes(16);
+    public static byte[] session = Random.randomBytes(4);
+    public static int seq = wrappedBuffer(Random.randomBytes()).readInt() & 0xfff;
+
+    static {
+        Ecdh ecdh = new Ecdh();
+        publicKey = ecdh.publicKey;
+        shareKey = ecdh.shareKey;
+    }
 
 }

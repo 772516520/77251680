@@ -3,7 +3,6 @@ package com.i77251680.core.client;
 import com.i77251680.constants.Constants;
 import com.i77251680.core.client.base.BaseClientImpl;
 import com.i77251680.core.writer.Writer;
-import com.i77251680.crypto.ecdh.Ecdh;
 import com.i77251680.crypto.tea.Tea;
 import com.i77251680.entity.config.Config;
 import com.i77251680.entity.device.FullDevice;
@@ -12,6 +11,7 @@ import com.i77251680.entity.enums.Platform;
 import com.i77251680.entity.login.qrcode.QrcodeResult;
 import com.i77251680.event.GlobalEventListener;
 import com.i77251680.network.Network;
+import com.i77251680.network.async.Task;
 import com.i77251680.network.protocol.packet.login.BuildLoginPacket;
 import com.i77251680.network.protocol.packet.login.PasswordLogin;
 import com.i77251680.network.protocol.packet.login.qrcode.BuildQrcodeLogin;
@@ -34,16 +34,13 @@ import java.util.Map;
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 public class BaseClient extends BaseClientImpl {
-    protected long uin;
-    protected Network network;
     public FullDevice fullDevice;
     public Platform platform;
+    protected long uin;
+    protected Network network;
     private final int hb480_interval;
 
     public BaseClient(long uin, Config config) {
-        Ecdh ecdh = new Ecdh();
-        Sig.publicKey = ecdh.publicKey;
-        Sig.shareKey = ecdh.shareKey;
         this.uin = uin;
         this.hb480_interval = config.hb480_interval;
         this.platform = config.platform;
@@ -138,11 +135,10 @@ public class BaseClient extends BaseClientImpl {
                     platform.subid,
                     platform.bitmap,
                     platform.subSigMap,
-                    platform.subSigMap,
-                    platform.buildtime,
+                    platform.buildTime,
                     platform.apkId,
                     platform.ver,
-                    platform.sdkver,
+                    platform.sdkVer,
                     fullDevice,
                     qrcodeResult.t106,
                     qrcodeResult.t16a,
@@ -231,8 +227,8 @@ public class BaseClient extends BaseClientImpl {
                     platform.ver,
                     platform.sign,
                     Sig.seq,
-                    platform.buildtime,
-                    platform.sdkver,
+                    platform.buildTime,
+                    platform.sdkVer,
                     platform.mainSigMap,
                     platform.ssoVersion
             );
@@ -260,8 +256,8 @@ public class BaseClient extends BaseClientImpl {
                     platform.ver,
                     platform.sign,
                     Sig.seq,
-                    platform.buildtime,
-                    platform.sdkver,
+                    platform.buildTime,
+                    platform.sdkVer,
                     allowSlider
             );
             sendLogin("wtlogin.login", body);
@@ -271,9 +267,16 @@ public class BaseClient extends BaseClientImpl {
     }
 
     /**
+     * token登录
+     */
+    protected void tokenLogin(byte[] token) {
+
+    }
+
+    /**
      * 发送短信验证码
      */
-    protected void sendSmsCode() {
+    protected void sendSMSCode() {
         try {
             byte[] pkt = BuildSendSmsCode.build(Sig.t104, platform.bitmap, platform.subSigMap, Sig.t174);
             sendLogin("wtlogin.login", pkt);
@@ -316,26 +319,20 @@ public class BaseClient extends BaseClientImpl {
     }
 
     @Override
-    public void sendPkt(byte[] pkt) {
-        network.sendPkt(pkt);
+    public Task<?> sendPkt(byte[] pkt) {
+        return network.sendPkt(pkt);
     }
 
-    public void sendUni(String cmd, byte[] body) {
-        byte[] pkt;
-        try {
-            pkt = BuildUniPkt.build(cmd, body, uin);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public Task<?> sendUni(String cmd, byte[] body) {
+        byte[] pkt = BuildUniPkt.build(cmd, body, uin);
+        return sendPkt(pkt);
     }
 
-    @Override
     public void sendLogin(String cmd, byte[] body) {
         byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei);
         network.sendLoginPacket(pkt);
     }
 
-    @Override
     public void sendLogin(String cmd, byte[] body, int type) {
         byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei, type);
         network.sendLoginPacket(pkt);

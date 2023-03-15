@@ -1,9 +1,7 @@
 package com.i77251680.core.client.base;
 
+import com.i77251680.network.async.Task;
+
 public interface BaseClient {
-    void sendPkt(byte[] pkt);
-
-    void sendLogin(String cmd, byte[] body);
-
-    void sendLogin(String cmd, byte[] body, int type);
+    Task<?> sendPkt(byte[] pkt);
 }

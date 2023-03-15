@@ -75,12 +75,12 @@ public enum Platform {
     public final String apkId;
     public final int subid;
     public final String ver;
-    public final String sdkver;
+    public final String sdkVer;
     public final int bitmap;
     public final int subSigMap;
     public final int mainSigMap;
     public final byte[] sign;
-    public final int buildtime;
+    public final int buildTime;
     public final int ssoVersion;
     public final int appId; // constant 16
     public final String display;
@@ -89,12 +89,12 @@ public enum Platform {
             String apkId,
             int subid,
             String ver,
-            String sdkver,
+            String sdkVer,
             int bitmap,
             int subSigMap,
             int mainSigMap,
             byte[] sign,
-            int buildtime,
+            int buildTime,
             int ssoVersion,
             int appId,
             String display
@@ -102,12 +102,12 @@ public enum Platform {
         this.apkId = apkId;
         this.subid = subid;
         this.ver = ver;
-        this.sdkver = sdkver;
+        this.sdkVer = sdkVer;
         this.bitmap = bitmap;
         this.subSigMap = subSigMap;
         this.mainSigMap = mainSigMap;
         this.sign = sign;
-        this.buildtime = buildtime;
+        this.buildTime = buildTime;
         this.ssoVersion = ssoVersion;
         this.appId = appId;
         this.display = display;

@@ -6,15 +6,11 @@ import com.i77251680.utils.JudgeType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class JceStruct {
-
-    private final Map<Byte, Object> JceMap = new HashMap<Byte, Object>();
-
     public static byte[] createHead(byte type, byte tag) {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         if ((int) tag < 15) {

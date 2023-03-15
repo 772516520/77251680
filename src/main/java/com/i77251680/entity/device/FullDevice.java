@@ -1,7 +1,8 @@
 package com.i77251680.entity.device;
 
-import com.i77251680.utils.HexFormat;
-import com.i77251680.utils.Utils;
+import com.i77251680.crypto.md5.Md5Crypto;
+import com.i77251680.utils.ArrayUtils;
+import com.i77251680.utils.Random;
 
 import java.util.Arrays;
 
@@ -78,21 +79,19 @@ public class FullDevice {
         os_type = "android";
 //        mac_address = d.mac_address;
         mac_address = "02:00:00:00:00:00";
-//        mac_address = "03:50:OA:30:B7:EC";
         ip_address = d.ip_address;
 //        wifi_bssid = d.mac_address;
         wifi_bssid = "02:00:00:00:00:00";
 //        wifi_ssid = d.wifi_ssid;
         wifi_ssid = "<unknown ssid>";
-//        imei = d.imei;
-        imei = "771766082767795";
+        imei = d.imei;
         android_id = d.android_id;
         apn = "wifi";
         version = new Version(d);
-        imsi = Utils.randomBytes(16);
-//        guid = Md5Crypto.encrypt(
-//                ArrayUtils.addAll(d.imei.getBytes(), d.mac_address.getBytes()));
+        imsi = Random.randomBytes(16);
+        guid = Md5Crypto.encrypt(
+                ArrayUtils.addAll(d.imei.getBytes(), d.mac_address.getBytes()));
 //        guid = HexFormat.of().parseHex("e1970ccb91dfddadd9f22cf6933ce9fe");
-        guid = HexFormat.of().parseHex("e1970ccb91dfd8adf9f22cf6933ce9fe");
+//        guid = HexFormat.of().parseHex("e1970ccb91dfd8adf9f22cf6933ce9fe");
     }
 }
