@@ -58,11 +58,11 @@ public class JceReader {
         return new JceElement(head.tag, value);
     }
 
-    public static byte readByte(ByteBuf buf) {
+    public static int readByte(ByteBuf buf) {
         return buf.readByte();
     }
 
-    public static short readShort(ByteBuf buf) {
+    public static int readShort(ByteBuf buf) {
         return buf.readShort();
     }
 
@@ -83,7 +83,7 @@ public class JceReader {
     }
 
     public static String readString(ByteBuf buf) {
-        int len = buf.readByte();
+        int len = buf.readByte() & 0xff;
         byte[] buffer = new byte[len];
         buf.readBytes(buffer);
         return len > 0 ? new String(buffer) : "";
