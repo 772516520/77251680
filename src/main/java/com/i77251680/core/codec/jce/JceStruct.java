@@ -79,24 +79,30 @@ public class JceStruct {
             case Type.JceMap:
                 type = JceConstants.TYPE_MAP;
                 break;
+            case Type.Zero:
+                type = JceConstants.TYPE_ZERO;
+                break;
             case Type.BYTE:
-                type = JceConstants.TYPE_BYTE;
-                break;
             case Type.SHORT:
-                type = JceConstants.TYPE_SHORT;
-                break;
             case Type.INT:
-                type = JceConstants.TYPE_INT;
-                break;
             case Type.LONG:
-                type = JceConstants.TYPE_LONG;
+                long number = value instanceof Integer ? (Integer) value : (Long) value;
+                if (number >= Byte.MIN_VALUE && number <= Byte.MAX_VALUE) {
+                    type = JceConstants.TYPE_BYTE;
+                    value = new Integer((int) number).byteValue();
+                } else if (number >= Short.MIN_VALUE && number <= Short.MAX_VALUE) {
+                    type = JceConstants.TYPE_SHORT;
+                    value = new Integer((int) number).shortValue();
+                } else if (number >= Integer.MIN_VALUE && number <= Integer.MAX_VALUE)
+                    type = JceConstants.TYPE_INT;
+                else if (number >= Long.MIN_VALUE && number <= Long.MAX_VALUE)
+                    type = JceConstants.TYPE_LONG;
+                else
+                    throw new JceException("Unsupported integer range: " + value);
                 break;
             case Type.FLOAT:
             case Type.DOUBLE:
                 type = JceConstants.TYPE_DOUBLE;
-                break;
-            case Type.Zero:
-                type = JceConstants.TYPE_ZERO;
                 break;
             default:
                 throw new JceException("Unsupported type: " + valueType);
@@ -106,7 +112,7 @@ public class JceStruct {
         return ArrayUtils.addAll(head, body);
     }
 
-    public static byte[] encode(List<?> list) throws IOException {
+    public static byte[] encode(List<?> list) {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         byte tag = 0;
         for (Object o : list) {
@@ -114,13 +120,17 @@ public class JceStruct {
                 ++tag;
                 continue;
             }
-            b.write(createElement(tag, o));
+            try {
+                b.write(createElement(tag, o));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             ++tag;
         }
         return b.toByteArray();
     }
 
-    public static byte[] encode(Map<Byte, Object> jceStructMap) throws IOException {
+    public static byte[] encode(Map<Byte, Object> jceStructMap) {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         byte tag = 0;
         for (Map.Entry<Byte, Object> entry : jceStructMap.entrySet()) {
@@ -128,7 +138,11 @@ public class JceStruct {
                 ++tag;
                 continue;
             }
-            b.write(createElement(tag, entry.getValue()));
+            try {
+                b.write(createElement(tag, entry.getValue()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             ++tag;
         }
         return b.toByteArray();
@@ -139,7 +153,7 @@ public class JceStruct {
      *
      * @return NestedStruct
      */
-    public static NestedStruct encodeNested(List<Object> list) throws IOException {
+    public static NestedStruct encodeNested(List<Object> list) {
         return new NestedStruct(encode(list));
     }
 
@@ -148,7 +162,7 @@ public class JceStruct {
      *
      * @return NestedStruct
      */
-    public static NestedStruct encodeNested(Map<Byte, Object> jceStructMap) throws IOException {
+    public static NestedStruct encodeNested(Map<Byte, Object> jceStructMap) {
         return new NestedStruct(encode(jceStructMap));
     }
 }

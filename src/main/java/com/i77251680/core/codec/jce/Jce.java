@@ -2,40 +2,23 @@ package com.i77251680.core.codec.jce;
 
 import io.netty.buffer.ByteBuf;
 
-import java.io.IOException;
 import java.util.*;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 public class Jce {
-    public static byte[] encodeWrapper(byte[] v, String serverPush, String fun) throws IOException {
-        List<Object> list = new ArrayList<>();
-        List<Object> list_ = new ArrayList<>();
-        Map<Object, Object> JceMap = new HashMap<>();
-        JceMap.put(fun, v);
-        list_.add(JceMap);
-        list.add(null);
-        list.add((byte) 3);
-        list.add(0);
-        list.add(0);
-        list.add((byte) 0);
-        list.add(serverPush);
-        list.add(fun);
-        list.add(JceStruct.encode(list_));
-        list.add(0);
-        list.add(new HashMap<>());
-        list.add(new HashMap<>());
-        return JceStruct.encode(list);
+    public static byte[] encodeWrapper(byte[] v, String cmd, String serverPush, String fun) {
+        return encodeWrapper(v, cmd, serverPush, fun, 0);
     }
 
-    public static byte[] encodeWrapper(byte[] v, String serverPush, String fun, byte reqid) throws IOException {
+    public static byte[] encodeWrapper(byte[] v, String cmd, String serverPush, String fun, int reqid) {
         List<Object> list = new ArrayList();
         List<Object> list_ = new ArrayList();
         Map<Object, Object> JceMap = new HashMap<>();
-        JceMap.put(fun, v);
+        JceMap.put(cmd, v);
         list_.add(JceMap);
         list.add(null);
-        list.add((byte) 3);
+        list.add(3);
         list.add(0);
         list.add(0);
         list.add(reqid);
@@ -48,7 +31,7 @@ public class Jce {
         return JceStruct.encode(list);
     }
 
-    public static byte[] encodeStruct(List list) throws IOException {
+    public static byte[] encodeStruct(List list) {
         List<NestedStruct> encodeList = new ArrayList<>();
         encodeList.add(JceStruct.encodeNested(list));
         return JceStruct.encode(encodeList);
