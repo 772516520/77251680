@@ -8,8 +8,10 @@ import com.i77251680.entity.config.Config;
 import com.i77251680.entity.device.FullDevice;
 import com.i77251680.entity.enums.LoginType;
 import com.i77251680.entity.enums.Platform;
+import com.i77251680.entity.enums.QrcodeRetCode;
 import com.i77251680.entity.login.qrcode.QrcodeResult;
-import com.i77251680.event.GlobalEventListener;
+import com.i77251680.event.EventListener;
+import com.i77251680.event.events.QrcodeErrorEvent;
 import com.i77251680.network.Network;
 import com.i77251680.network.async.Task;
 import com.i77251680.network.protocol.packet.login.BuildLoginPacket;
@@ -25,8 +27,6 @@ import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
 import com.i77251680.network.protocol.packet.unpack.tlv.ReadTlv;
 import io.netty.buffer.ByteBuf;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -34,19 +34,19 @@ import java.util.Map;
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 public class BaseClient extends BaseClientImpl {
-    public FullDevice fullDevice;
-    public Platform platform;
     protected long uin;
     protected Network network;
-    private final int hb480_interval;
+    public FullDevice fullDevice;
+    public Platform platform;
+    private Config config;
 
     public BaseClient(long uin, Config config) {
         this.uin = uin;
-        this.hb480_interval = config.hb480_interval;
+        this.config = config;
         this.platform = config.platform;
         this.fullDevice = new FullDevice(uin);
         try {
-            network = new Network(uin, fullDevice, platform, hb480_interval);
+            network = new Network(uin, fullDevice, platform, config.hb480_interval);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,15 +94,10 @@ public class BaseClient extends BaseClientImpl {
             Map<Integer, ByteBuf> t = ReadTlv.read(buf);
             if (retcode == 0 && t.containsKey(0x17)) {
                 Sig.qrsig = qrsig;
-                File file = new File("F:\\dev\\devbot\\qrcode.png");
                 byte[] data = t.get(0x17).array();
-                FileOutputStream outputStream = new FileOutputStream(file);
-                outputStream.write(data);
-                outputStream.close();
-                System.out.println("二维码生成");
-                GlobalEventListener.getGlobalPublisher().broadcast("system.qrcode", "path: " + file.toString());
+                EventListener.broadcastEvent("internal.qrcode", data);
             } else {
-                System.out.println("获取二维码失败");
+                EventListener.broadcastEvent("internal.error.qrcode", QrcodeErrorEvent.set(retcode, "获取二维码失败, 请重试"));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -149,6 +144,26 @@ public class BaseClient extends BaseClientImpl {
                     platform.ssoVersion
             );
             sendLogin("wtlogin.login", body);
+        } else {
+            String message;
+            switch (qrcodeResult.retcode) {
+                case QrcodeRetCode.Timeout:
+                    message = "二维码超时, 请重新获取";
+                    break;
+                case QrcodeRetCode.WaitingForScan:
+                    message = "二维码尚未扫描";
+                    break;
+                case QrcodeRetCode.WaitingForConfirm:
+                    message = "二维码被取消, 请重新获取";
+                    break;
+                case QrcodeRetCode.Canceled:
+                    message = "二维码超时，请重新获取";
+                    break;
+                default:
+                    message = "扫码未知错误, 请重新获取";
+            }
+            Sig.qrsig = Constants.BUF0;
+            EventListener.broadcastEvent("internal.error.qrcode", QrcodeErrorEvent.set(qrcodeResult.retcode, message));
         }
     }
 
