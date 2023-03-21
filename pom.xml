@@ -25,7 +25,7 @@
                             <addClasspath>true</addClasspath>
                             <useUniqueVersions>false</useUniqueVersions>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.i77251680.App</mainClass>
+                            <mainClass>com.i77251680.Client</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -71,6 +71,6 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.85.Final</version>
         </dependency>
-        
+
     </dependencies>
 </project>
