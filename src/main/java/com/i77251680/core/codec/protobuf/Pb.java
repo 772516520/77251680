@@ -54,8 +54,8 @@ public class Pb {
     }
 
     public static void _decode(ByteBuffer buf, Node node) {
-        int k = buf.get();
-        int fieldNumber = k >>> 3, type = k & 0b111;
+        int k = (int) PbReader.readVarint(buf);
+        int fieldNumber = k >> 3, type = k & 0b111;
         switch (type) {
             case WriteType.VARINT:
                 node.put(fieldNumber, PbReader.readVarint(buf));
@@ -68,6 +68,8 @@ public class Pb {
                     node.put(fieldNumber, r);
                 }
                 break;
+            case WriteType.FIXED32:
+                node.put(fieldNumber, PbReader.readFixed32(buf));
         }
     }
 }
