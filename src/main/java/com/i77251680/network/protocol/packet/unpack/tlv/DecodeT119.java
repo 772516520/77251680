@@ -3,6 +3,7 @@ package com.i77251680.network.protocol.packet.unpack.tlv;
 import com.i77251680.core.client.Sig;
 import com.i77251680.crypto.md5.Md5Crypto;
 import com.i77251680.crypto.tea.Tea;
+import com.i77251680.entity.packet.sso.T119;
 import com.i77251680.utils.ArrayUtils;
 import io.netty.buffer.ByteBuf;
 
@@ -12,7 +13,7 @@ import java.util.Map;
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 public class DecodeT119 {
-    public static void decode(ByteBuf t119) {
+    public static T119 decode(ByteBuf t119) {
         ByteBuf r = wrappedBuffer(new Tea().decrypt(t119.array(), Sig.tgtgt));
         r.readShort();
         Map<Integer, ByteBuf> t = ReadTlv.read(r);
@@ -28,6 +29,6 @@ public class DecodeT119 {
         int age = t11a.readByte();
         int gender = t11a.readByte();
         String nickname = new String(Arrays.copyOfRange(t11a_, 5, t11a_.length));
-        System.out.println(nickname);
+        return T119.set(age, gender, nickname);
     }
 }

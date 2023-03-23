@@ -3,7 +3,7 @@ package com.i77251680.network.protocol.packet.login.qrcode;
 import com.i77251680.core.client.Sig;
 import com.i77251680.core.writer.Writer;
 import com.i77251680.network.protocol.packet.login.BuildLoginPacket;
-import com.i77251680.utils.Utils;
+import com.i77251680.utils.Time;
 
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class BuildQrcodePacket {
                 .writeInt(0x1000)
                 .writeShort(0)
                 .writeInt(0x72000000)
-                .writeInt(Utils.DATE)
+                .writeInt(Time.timestamp())
                 .writeByte(2)
                 .writeShort(44 + body.length)
                 .writeShort(cmdid)

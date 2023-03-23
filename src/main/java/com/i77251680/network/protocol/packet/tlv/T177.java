@@ -5,10 +5,10 @@ import com.i77251680.core.writer.Writer;
 import java.io.IOException;
 
 public class T177 {
-    public static Writer writeT177(int buildtime, String sdkver) throws IOException {
+    public static Writer writeT177(int buildTime, String sdkVer) throws IOException {
         return new Writer()
                 .writeByte(1)
-                .writeInt(buildtime)
-                .writeTlv(sdkver);
+                .writeInt(buildTime)
+                .writeTlv(sdkVer);
     }
 }

@@ -8,16 +8,24 @@ import com.i77251680.crypto.tea.Tea;
 import java.io.IOException;
 
 public class BuildUniPkt {
-    public static byte[] build(String cmd, byte[] body, long uin) throws IOException {
-        return pack(cmd, body, uin, 0);
+    public static byte[] build(String cmd, byte[] body, long uin) {
+        try {
+            return pack(cmd, body, uin, 0);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static byte[] build(String cmd, byte[] body, long uin, int seq) throws IOException {
-        return pack(cmd, body, uin, seq);
+    public static byte[] build(String cmd, byte[] body, long uin, int seq) {
+        try {
+            return pack(cmd, body, uin, seq);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static byte[] pack(String cmd, byte[] body, long uin, int seq) throws IOException {
-        seq = seq == 0 ? BaseClient.next_seq() : seq;
+        seq = (seq == 0) ? BaseClient.next_seq() : seq;
         byte[] sso = new Writer()
                 .writeInt(cmd.length() + 20)
                 .writeWithLength(cmd)

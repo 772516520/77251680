@@ -5,7 +5,8 @@ import com.i77251680.core.writer.Writer;
 import com.i77251680.crypto.md5.Md5Crypto;
 import com.i77251680.crypto.tea.Tea;
 import com.i77251680.utils.ArrayUtils;
-import com.i77251680.utils.Utils;
+import com.i77251680.utils.Random;
+import com.i77251680.utils.Time;
 
 import java.io.IOException;
 
@@ -22,12 +23,12 @@ public class T106 {
     ) throws IOException {
         byte[] body = new Writer()
                 .writeShort(4)
-                .writeBytes(Utils.randomBytes())
+                .writeBytes(Random.randomBytes())
                 .writeInt(ssoVersion)
                 .writeInt(appid)
                 .writeInt(0)
                 .writeLong(uin)
-                .writeInt(Utils.DATE)
+                .writeInt(Time.timestamp())
                 .writeBytes(Constants.BUF4)
                 .writeByte(1) // isSavePassword
                 .writeBytes(md5pass)

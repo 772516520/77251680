@@ -39,7 +39,7 @@ public class BuildLoginPacket {
             body = new Writer()
                     .writeByte(0x02)
                     .writeByte(0x01)
-                    .writeBytes(Sig.randkey)
+                    .writeBytes(Sig.randKey)
                     .writeShort(0x131)
                     .writeShort(1)
                     .writeTlv(Sig.publicKey)

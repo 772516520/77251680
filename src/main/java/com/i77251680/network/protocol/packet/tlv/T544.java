@@ -2,7 +2,7 @@ package com.i77251680.network.protocol.packet.tlv;
 
 import com.i77251680.core.writer.Writer;
 import com.i77251680.utils.HexFormat;
-import com.i77251680.utils.Utils;
+import com.i77251680.utils.Random;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class T544 {
                 .writeShort(8)
                 .writeLong(System.currentTimeMillis())
                 .writeShort(2)
-                .writeTlv(Utils.randomBytes(0x0a))
+                .writeTlv(Random.randomBytes(0x0a))
                 .writeShort(3)
                 .writeTlv(new byte[]{1, 0, 0, 1})
                 .writeShort(5)
@@ -45,7 +45,7 @@ public class T544 {
                 .writeByte(0)
                 .writeByte(0)
                 .writeByte(0)
-                .writeBytes(Utils.randomBytes())
+                .writeBytes(Random.randomBytes())
                 .writeInt(2)
                 .writeShort(0)
                 .writeTlv(body);

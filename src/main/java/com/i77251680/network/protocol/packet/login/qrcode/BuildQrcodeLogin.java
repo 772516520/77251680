@@ -15,11 +15,10 @@ public class BuildQrcodeLogin {
             int subid,
             int bimap,
             int subSigMap,
-            int sigmap,
-            int buildtime,
+            int buildTime,
             String id,
             String ver,
-            String sdkver,
+            String sdkVer,
             FullDevice fullDevice,
             byte[] t106,
             byte[] t16a,
@@ -36,11 +35,10 @@ public class BuildQrcodeLogin {
                     subid,
                     bimap,
                     subSigMap,
-                    sigmap,
-                    buildtime,
+                    buildTime,
                     id,
                     ver,
-                    sdkver,
+                    sdkVer,
                     fullDevice,
                     t106,
                     t16a,
@@ -57,15 +55,14 @@ public class BuildQrcodeLogin {
 
     private static byte[] pack(
             long uin,
-            int appid,
+            int appId,
             int subid,
             int bimap,
             int subSigMap,
-            int sigmap,
-            int buildtime,
-            String id,
+            int buildTime,
+            String apkId,
             String ver,
-            String sdkver,
+            String sdkVer,
             FullDevice fullDevice,
             byte[] t106,
             byte[] t16a,
@@ -78,16 +75,16 @@ public class BuildQrcodeLogin {
         return new Writer()
                 .writeShort(9)
                 .writeShort(24)
-                .writeBytes(PackTlv.pack(0x18, T18.writeT18(uin, appid)))
+                .writeBytes(PackTlv.pack(0x18, T18.writeT18(uin, appId)))
                 .writeBytes(PackTlv.pack(0x01, T1.writeT1(uin)))
                 .writeBytes(PackTlv.pack(0x106, t106))
                 .writeBytes(PackTlv.pack(0x116, T116.writeT116(bimap, subSigMap)))
-                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, sigmap, mainSigMap, ssoVersion)))
+                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appId, subid, mainSigMap, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x107, T107.writeT107()))
-                .writeBytes(PackTlv.pack(0x142, T142.writeT142(id)))
+                .writeBytes(PackTlv.pack(0x142, T142.writeT142(apkId)))
                 .writeBytes(PackTlv.pack(0x144, T144.writeT144(fullDevice, tgtgt)))
                 .writeBytes(PackTlv.pack(0x145, T145.writeT145(fullDevice.guid)))
-                .writeBytes(PackTlv.pack(0x147, T147.writeT147(appid, ver, sign)))
+                .writeBytes(PackTlv.pack(0x147, T147.writeT147(appId, ver, sign)))
                 .writeBytes(PackTlv.pack(0x16a, t16a))
                 .writeBytes(PackTlv.pack(0x154, T154.writeT154(Sig.seq)))
                 .writeBytes(PackTlv.pack(0x141, T141.writeT141(fullDevice.sim, fullDevice.apn)))
@@ -98,7 +95,7 @@ public class BuildQrcodeLogin {
                 .writeBytes(PackTlv.pack(0x194, T194.writeT194(fullDevice.imsi)))
                 .writeBytes(PackTlv.pack(0x191, T191.writeT191()))
                 .writeBytes(PackTlv.pack(0x202, T202.writeT202(fullDevice.wifi_bssid, fullDevice.wifi_ssid)))
-                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildtime, sdkver)))
+                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildTime, sdkVer)))
                 .writeBytes(PackTlv.pack(0x516, T516.writeT516()))
                 .writeBytes(PackTlv.pack(0x521, T521.writeT521()))
                 .writeBytes(PackTlv.pack(0x318, t318))

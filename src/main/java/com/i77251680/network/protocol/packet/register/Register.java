@@ -11,4 +11,10 @@ public class Register {
         byte[] body = BuildRegister.build(uin, fullDevice);
         return BuildLoginPacket.build("StatSvc.register", body, uin, platform.subid, fullDevice.imei, 1);
     }
+
+    public static byte[] r(long uin, boolean logout, FullDevice fullDevice, Platform platform) {
+        BaseClient.next_seq();
+        byte[] body = BuildRegister.build(uin, logout, fullDevice);
+        return BuildLoginPacket.build("StatSvc.register", body, uin, platform.subid, fullDevice.imei, 1);
+    }
 }

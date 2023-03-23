@@ -18,13 +18,13 @@ public class PasswordLogin {
             int subid,
             int bitmap,
             int subSigMap,
-            String id,
+            String apkId,
             FullDevice fullDevice,
             String ver,
             byte[] sign,
             int seq,
-            int buildtime,
-            String sdkver,
+            int buildTime,
+            String sdkVer,
             int mainSigMap,
             int ssoVersion
     ) throws IOException {
@@ -35,9 +35,9 @@ public class PasswordLogin {
                 .writeBytes(PackTlv.pack(0x01, T1.writeT1(uin)))
                 .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType.getType(), md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x116, T116.writeT116(bitmap, subSigMap)))
-                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, bitmap, mainSigMap, ssoVersion)))
+                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, mainSigMap, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x107, T107.writeT107()))
-                .writeBytes(PackTlv.pack(0x142, T142.writeT142(id)))
+                .writeBytes(PackTlv.pack(0x142, T142.writeT142(apkId)))
                 .writeBytes(PackTlv.pack(0x144, T144.writeT144(fullDevice, tgtgt)))
                 .writeBytes(PackTlv.pack(0x145, T145.writeT145(fullDevice.guid)))
                 .writeBytes(PackTlv.pack(0x147, T147.writeT147(appid, ver, sign)))
@@ -49,7 +49,7 @@ public class PasswordLogin {
                 .writeBytes(PackTlv.pack(0x188, T188.writeT188(fullDevice.android_id)))
                 .writeBytes(PackTlv.pack(0x191, T191.writeT191()))
                 .writeBytes(PackTlv.pack(0x202, T202.writeT202(fullDevice.wifi_bssid, fullDevice.wifi_ssid)))
-                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildtime, sdkver)))
+                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildTime, sdkVer)))
                 .writeBytes(PackTlv.pack(0x516, T516.writeT516()))
                 .writeBytes(PackTlv.pack(0x521, T521.writeT521()))
                 .writeBytes(PackTlv.pack(0x525, T525.writeT525()))
@@ -67,13 +67,13 @@ public class PasswordLogin {
             int ssoVersion,
             int bitmap,
             int subSigMap,
-            String id,
+            String apkId,
             FullDevice fullDevice,
             String ver,
             byte[] sign,
             int seq,
-            int buildtime,
-            String sdkver,
+            int buildTime,
+            String sdkVer,
             boolean allowSlider
     ) throws IOException {
         Writer body = new Writer()
@@ -83,10 +83,10 @@ public class PasswordLogin {
                 .writeBytes(PackTlv.pack(0x01, T1.writeT1(uin)))
                 .writeBytes(PackTlv.pack(0x106, T106.writeT106(uin, appid, loginType.getType(), md5pass, tgtgt, fullDevice.guid, subid, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x116, T116.writeT116(bitmap, subSigMap)))
-                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, bitmap, mainSigMap, ssoVersion)))
+                .writeBytes(PackTlv.pack(0x100, T100.writeT100(appid, subid, mainSigMap, ssoVersion)))
                 .writeBytes(PackTlv.pack(0x107, T107.writeT107()))
                 .writeBytes(PackTlv.pack(0x108, T108.writeT108(fullDevice.imei))) // 不确定
-                .writeBytes(PackTlv.pack(0x142, T142.writeT142(id)))
+                .writeBytes(PackTlv.pack(0x142, T142.writeT142(apkId)))
                 .writeBytes(PackTlv.pack(0x144, T144.writeT144(fullDevice, tgtgt)))
                 .writeBytes(PackTlv.pack(0x145, T145.writeT145(fullDevice.guid)))
                 .writeBytes(PackTlv.pack(0x147, T147.writeT147(appid, ver, sign)))
@@ -101,7 +101,7 @@ public class PasswordLogin {
             body.writeBytes(PackTlv.pack(0x191, T191.writeT191()));
         }
         body.writeBytes(PackTlv.pack(0x202, T202.writeT202(fullDevice.wifi_bssid, fullDevice.wifi_ssid)))
-                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildtime, sdkver)))
+                .writeBytes(PackTlv.pack(0x177, T177.writeT177(buildTime, sdkVer)))
                 .writeBytes(PackTlv.pack(0x516, T516.writeT516()))
                 .writeBytes(PackTlv.pack(0x521, T521.writeT521()))
                 .writeBytes(PackTlv.pack(0x525, T525.writeT525()));
