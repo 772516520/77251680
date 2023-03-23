@@ -2,24 +2,32 @@ package com.i77251680.network;
 
 import com.i77251680.constants.Constants;
 import com.i77251680.core.client.Sig;
-import com.i77251680.core.codec.protobuf.Heartbeat;
+import com.i77251680.core.client.Statistics;
+import com.i77251680.core.codec.jce.Jce;
 import com.i77251680.crypto.tea.Tea;
-import com.i77251680.entity.device.FullDevice;
-import com.i77251680.entity.enums.Platform;
 import com.i77251680.entity.packet.sso.SSO;
-import com.i77251680.event.GlobalEventListener;
+import com.i77251680.event.EventListener;
 import com.i77251680.exceptions.PacketException;
 import com.i77251680.exceptions.SSOException;
-import com.i77251680.network.protocol.packet.register.Register;
-import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
-import com.i77251680.network.protocol.packet.unpack.login.DecodeLoginResponse;
+import com.i77251680.network.async.AsyncTask;
+import com.i77251680.network.async.Task;
+import com.i77251680.utils.ArrayUtils;
+import com.i77251680.utils.HexFormat;
+import com.i77251680.utils.Time;
+import com.i77251680.utils.Zlib;
+import com.i77251680.utils.timer.TimerTask;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
@@ -27,170 +35,157 @@ import static io.netty.buffer.Unpooled.wrappedBuffer;
 @Slf4j
 public class Network {
     private static byte[] buf;
-    private boolean Login_Lock = false;
-    private final long uin;
-    private final FullDevice fullDevice;
-    private final Platform platform;
-    private Timer timer;
-    private static final String default_host = "msfwifi.3g.qq.com";
-    private static final int default_port = 8080;
+    private TimerTask timeoutTimer;
+    public boolean auto_search = true;
+    public boolean searching = false;
+    private static String host = "msfwifi.3g.qq.com";
+    private static int port = 8080;
+    private long update_time;
     private Socket socket;
     private InputStream inputStream;
     private OutputStream outputStream;
-    private boolean isOnline = false;
-    private final int hb480_interval;
-    private final Map<Integer, Handlers> Handle = new HashMap<>();
+    private Thread thread;
+    private Statistics statistics;
+    private final Map<String, Integer> host_port = new HashMap<>();
+    private final Map<Integer, AsyncTask.Callback<Object>> handle = new HashMap<>();
 
-    public Network(long uin, FullDevice fullDevice, Platform platform, int hb480_interval) throws IOException {
+    public Network(Statistics statistics) {
         buf = new byte[7168];
-        this.socket = new Socket(default_host, default_port);
-        this.inputStream = socket.getInputStream();
-        this.outputStream = socket.getOutputStream();
-        this.uin = uin;
-        this.fullDevice = fullDevice;
-        this.platform = platform;
-        this.hb480_interval = hb480_interval;
-        this.timer = new Timer();
+        this.statistics = statistics;
+        connect();
+        EventListener.broadcastEvent("connect", socket);
     }
 
-    public void sendPkt(byte[] pkt) {
+    private void connect() {
         try {
-            if (!socket.isClosed())
-                outputStream.write(pkt);
-            else {
-                log.warn("closed");
-                log.warn("尝试重连");
-                timer.cancel();
-                timer = new Timer();
-                socket = new Socket(default_host, default_port);
-                this.inputStream = socket.getInputStream();
-                this.outputStream = socket.getOutputStream();
-                log.info("connected");
-                outputStream.write(pkt);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void sendUni(byte[] pkt) {
-        sendPkt(pkt);
-    }
-
-    public byte[] sendQrcodePkt(byte[] pkt) {
-        try {
-            sendPkt(pkt);
-            inputStream.read(buf);
-            return response(buf);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void sendLoginPacket(byte[] pkt) {
-        if (Login_Lock)
-            return;
-        Login_Lock = true;
-        try {
-            sendPkt(pkt);
-            inputStream.read(buf);
-            byte[] payload = response(buf);
-            int type = DecodeLoginResponse.decode(payload, fullDevice);
-            if (type == 0)
-                register();
-            else
-                System.out.println(type);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void register() {
-        byte[] pkt = Register.r(uin, fullDevice, platform);
-        sendPkt(pkt);
-        GlobalEventListener.getGlobalPublisher().broadcast("system.online", "online");
-        isOnline = true;
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-//                new Thread(() -> {
-                try {
-                    byte[] body = new Heartbeat(uin).pack();
-                    byte[] heartbeat = BuildUniPkt.build("OidbSvc.0x480_9_IMCore", body, uin);
-//                    byte[] heartbeat = Heartbeat.build(uin, subid, fullDevice.imei);
-                    sendUni(heartbeat);
-                    System.out.println("[发送] 心跳");
-                } catch (Exception e) {
-                    e.printStackTrace();
+            this.socket = new Socket(host, port);
+            this.inputStream = socket.getInputStream();
+            this.outputStream = socket.getOutputStream();
+            System.err.println(socket.getInetAddress() + " connected");
+            thread = new Thread(() -> {
+                while (!socket.isClosed()) {
+                    try {
+                        int len = inputStream.read(buf);
+                        byte[] buf_ = Arrays.copyOf(buf, len);
+                        long len_ = wrappedBuffer(buf_).readUnsignedInt();
+                        if (len >= len_)
+                            response(buf_);
+                        Arrays.fill(buf, (byte) 0);
+                    } catch (Exception e) {
+                        try {
+                            socket.close();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
                 }
-//                }).start();
-            }
-        }, hb480_interval, hb480_interval);
+                host_port.remove(host);
+                System.err.println(socket.getRemoteSocketAddress() + " closed");
+                EventListener.broadcastEvent("lost", null);
+            });
+            thread.start();
+            setServer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-//        new Thread(() -> {
-        while (!socket.isClosed()) {
+    }
+
+    public void send(byte[] packet) {
+        try {
+            outputStream.write(packet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Task<?> sendPkt(byte[] pkt) {
+        if (!socket.isClosed()) {
+            return new AsyncTask<>((res, rej) -> {
+                try {
+                    outputStream.write(pkt);
+                    handle.put(Sig.seq, (payload) -> {
+                        handle.remove(Sig.seq);
+                        timeoutTimer.cancel();
+                        res.run(payload);
+                    });
+                    ++statistics.sent_pkt_cnt;
+                    timeoutTimer = new TimerTask(() -> {
+                        handle.remove(Sig.seq);
+                        timeoutTimer.cancel();
+                        ++statistics.lost_pkt_cnt;
+                        rej.run("packet time out" + Sig.seq);
+                    });
+                    timeoutTimer.start(5000);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
             try {
-                int len = inputStream.read(buf);
-                byte[] buf_ = Arrays.copyOf(buf, len);
-                long len_ = wrappedBuffer(buf_).readUnsignedInt();
-                if (len >= len_)
-                    response(buf_);
-                System.out.println(len_);
-                Arrays.fill(buf, (byte) 0);
-            } catch (Exception e) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                register();
-                isOnline = false;
-                e.printStackTrace();
+                socket.close();
+                connect();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+            return new AsyncTask<>((res, rej) -> {
+                try {
+                    outputStream.write(pkt);
+                    handle.put(Sig.seq, (payload) -> {
+                        handle.remove(Sig.seq);
+                        res.run(payload);
+                    });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
-//        }).start();
     }
 
-    protected byte[] response(byte[] chunk) {
+
+    protected void response(byte[] chunk) {
         ByteBuf byteBuf = wrappedBuffer(chunk);
         int len = byteBuf.readInt();
         byte[] pkt = Arrays.copyOfRange(chunk, 4, len);
-        return UnpackPacket(pkt);
+        UnpackPacket(pkt);
     }
 
     private SSO parseSSO(byte[] pkt) {
-        ByteBuf buf = wrappedBuffer(pkt);
-        final int headlen = buf.readInt();
-        final int seq = buf.readInt();
-        int retcode = buf.readInt();
+        ByteBuffer buf = ByteBuffer.wrap(pkt);
+        final int headlen = buf.getInt();
+        final int seq = buf.getInt();
+        int retcode = buf.getInt();
         if (retcode != 0) {
+            EventListener.broadcastEvent("internal.error.login", null);
             throw new SSOException("unsuccessful retcode" + retcode);
         }
-        int offset = buf.readInt() + 12;
-        buf.resetReaderIndex();
-        buf.readBytes(offset);
-        int len = buf.readInt();
+        int offset = buf.getInt() + 12;
+        buf.rewind();
+        buf.get(new byte[offset]);
+        int len = buf.getInt();
         String cmd = new String(Arrays.copyOfRange(pkt, offset + 4, offset + len));
         offset += len;
-        buf.resetReaderIndex();
-        buf.readBytes(offset);
-        len = buf.readInt();
-        buf.resetReaderIndex();
-        buf.readBytes(offset + len);
-        final int flag = buf.readInt();
+        buf.rewind();
+        buf.get(new byte[offset]);
+        len = buf.getInt();
+        buf.rewind();
+        offset += len;
+        buf.get(new byte[offset]);
+        final int flag = buf.getInt();
         byte[] payload;
         if (flag == 0) {
             payload = Arrays.copyOfRange(pkt, headlen + 4, pkt.length);
         } else if (flag == 1) {
-            payload = Constants.BUF8;
+            byte[] b = Zlib.unzip(Arrays.copyOfRange(pkt, headlen + 4, pkt.length));
+            payload = b;
         } else if (flag == 8) {
             payload = Arrays.copyOfRange(pkt, headlen, pkt.length);
         } else throw new SSOException("unKnow flag" + flag);
         return new SSO(cmd, seq, payload);
     }
 
-    private byte[] UnpackPacket(byte[] pkt) {
-        Login_Lock = false;
+    private void UnpackPacket(byte[] pkt) {
+        ++statistics.recv_pkt_cnt;
         ByteBuf buf = wrappedBuffer(pkt);
         buf.readInt();
         int flag = buf.readByte();
@@ -209,17 +204,101 @@ public class Network {
                 decrypted = new Tea().decrypt(encrypted, Constants.BUF16);
                 break;
             default:
+                EventListener.broadcastEvent("internal.error.login", null);
                 throw new PacketException("unKnow flag" + flag);
         }
         SSO sso = parseSSO(decrypted);
         System.out.println("[recv] " + sso.cmd);
-        if (Handle.containsKey(Sig.seq)) {
-            Handle.get(Sig.seq).handle(sso.payload);
-        }
-        return sso.payload;
+        if (handle.containsKey(sso.seq))
+            handle.get(Sig.seq).run(sso.payload);
+        else
+            EventListener.broadcastSSO(sso);
     }
 
-    public Socket getSocket() {
-        return this.socket;
+    public void terminate() {
+        try {
+            socket.close();
+            timeoutTimer.cancel();
+            inputStream.close();
+            outputStream.close();
+            System.exit(10);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void setServer() {
+        if (!auto_search) return;
+        Set<String> ipList = host_port.keySet();
+        if (ipList.size() > 0) {
+            host = ipList.iterator().next();
+            port = host_port.get(host);
+        }
+        if (Time.timestamp() - update_time > 3600 && !searching) {
+            searching = true;
+            Map<String, Integer> serverList = fetchServerList();
+            Set<String> ip_list = serverList.keySet();
+            update_time = Time.timestamp();
+            host_port.clear();
+            Iterator<String> it = ip_list.iterator();
+            String ip = it.next();
+            host_port.put(ip, serverList.get(ip));
+            it.next();
+            host_port.put(ip, serverList.get(ip));
+            searching = false;
+        }
+    }
+
+    public Map<String, Integer> fetchServerList() {
+        byte[] key = HexFormat.of().parseHex("F0441F5FF42DA58FDCF7949ABA62D411");
+        List<Object> list = new ArrayList<>();
+        list.add(null);
+        list.add(0);
+        list.add(0);
+        list.add(1);
+        list.add("00000");
+        list.add(100);
+        list.add(537064989);
+        list.add("356235088634151");
+        list.add(0);
+        list.add(0);
+        list.add(0);
+        list.add(0);
+        list.add(0);
+        list.add(0);
+        list.add(1);
+        byte[] HttpServerListReq = Jce.encodeStruct(list);
+        byte[] body = Jce.encodeWrapper(HttpServerListReq, "HttpServerListReq", "ConfigHttp", "HttpServerListReq");
+        ByteBuffer len = ByteBuffer.wrap(new byte[4]);
+        len.putInt(body.length + 4);
+        body = ArrayUtils.concat(len.array(), body);
+        body = new Tea().encrypt(body, key);
+        try {
+            URL url = new URL("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp?mType=getssolist");
+            URLConnection connection = url.openConnection();
+            HttpURLConnection http = (HttpURLConnection) connection;
+            http.setRequestMethod("POST");
+            http.setDoOutput(true);
+            OutputStream out = http.getOutputStream();
+            out.write(body);
+            int code = http.getResponseCode();
+            InputStream in = http.getInputStream();
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            int i;
+            while ((i = in.read()) != -1) {
+                b.write(i);
+            }
+            byte[] decoded = new Tea().decrypt(b.toByteArray(), key);
+            byte[] data = Arrays.copyOfRange(decoded, 4, decoded.length);
+            Map nested = Jce.decodeWrapper(data);
+            Map<String, Integer> ret = new HashMap<>();
+            for (Map map : (List<Map>) nested.get(2)) {
+                ret.put((String) map.get(1), (int) map.get(2));
+            }
+            return ret;
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 }

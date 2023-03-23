@@ -2,6 +2,9 @@ package com.i77251680.core.client;
 
 import com.i77251680.constants.Constants;
 import com.i77251680.core.client.base.BaseClientImpl;
+import com.i77251680.core.codec.jce.Jce;
+import com.i77251680.core.codec.protobuf.Node;
+import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.core.writer.Writer;
 import com.i77251680.crypto.tea.Tea;
 import com.i77251680.entity.config.Config;
@@ -10,8 +13,10 @@ import com.i77251680.entity.enums.LoginType;
 import com.i77251680.entity.enums.Platform;
 import com.i77251680.entity.enums.QrcodeRetCode;
 import com.i77251680.entity.login.qrcode.QrcodeResult;
+import com.i77251680.entity.packet.sso.T119;
 import com.i77251680.event.EventListener;
 import com.i77251680.event.events.QrcodeErrorEvent;
+import com.i77251680.exceptions.ApiException;
 import com.i77251680.network.Network;
 import com.i77251680.network.async.Task;
 import com.i77251680.network.protocol.packet.login.BuildLoginPacket;
@@ -22,14 +27,21 @@ import com.i77251680.network.protocol.packet.login.verify.slider.BuildSubmitSlid
 import com.i77251680.network.protocol.packet.login.verify.sms.BuildSendSmsCode;
 import com.i77251680.network.protocol.packet.login.verify.sms.BuildSubmitSmsCode;
 import com.i77251680.network.protocol.packet.pack.PackTlv;
+import com.i77251680.network.protocol.packet.register.Register;
 import com.i77251680.network.protocol.packet.tlv.*;
 import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
+import com.i77251680.network.protocol.packet.unpack.login.DecodeLoginResponse;
 import com.i77251680.network.protocol.packet.unpack.tlv.ReadTlv;
+import com.i77251680.utils.Time;
 import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 
@@ -38,18 +50,29 @@ public class BaseClient extends BaseClientImpl {
     protected Network network;
     public FullDevice fullDevice;
     public Platform platform;
-    private Config config;
+    public Config config;
+    private Timer timer;
+    private boolean isOnline = false;
+    private boolean Login_Lock = false;
+    private Statistics statistics = Statistics.get();
 
     public BaseClient(long uin, Config config) {
         this.uin = uin;
         this.config = config;
         this.platform = config.platform;
         this.fullDevice = new FullDevice(uin);
-        try {
-            network = new Network(uin, fullDevice, platform, config.hb480_interval);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        network = new Network(statistics);
+        EventListener.on("connect", (Socket socket) -> {
+            statistics.remote_ip = socket.getInetAddress().getHostAddress();
+            statistics.remote_port = socket.getPort();
+        });
+        EventListener.on("lost", (__) -> {
+            try {
+                timer.cancel();
+            } catch (Exception e) {
+            }
+            register(false);
+        });
     }
 
     /**
@@ -78,7 +101,7 @@ public class BaseClient extends BaseClientImpl {
                     uin,
                     platform.subid,
                     fullDevice.imei);
-            byte[] payload = network.sendQrcodePkt(pkt);
+            byte[] payload = network.sendPkt(pkt).get();
             payload = new Tea().decrypt(Arrays.copyOfRange(payload, 16, payload.length - 1), Sig.shareKey);
             ByteBuf buf = wrappedBuffer(payload);
             buf.readBytes(54);
@@ -189,7 +212,7 @@ public class BaseClient extends BaseClientImpl {
                     .writeShort(0)
                     .read();
             byte[] pkt = BuildQrcodePacket.build(0x12, 0x6200, body, uin, platform.subid, fullDevice.imei);
-            byte[] payload = network.sendQrcodePkt(pkt);
+            byte[] payload = network.sendPkt(pkt).get();
             payload = new Tea().decrypt(Arrays.copyOfRange(payload, 16, payload.length - 1), Sig.shareKey);
             ByteBuf buf = wrappedBuffer(payload);
             buf.readBytes(48);
@@ -307,7 +330,7 @@ public class BaseClient extends BaseClientImpl {
      */
     protected void submitSmsCode(String code) {
         try {
-            byte[] pkt = BuildSubmitSmsCode.build(Sig.t104, platform.bitmap, platform.subSigMap, Sig.t174, code, Sig.G);
+            byte[] pkt = BuildSubmitSmsCode.build(Sig.t104, platform.bitmap, platform.subSigMap, Sig.t174, code, Sig.g);
             sendLogin("wtlogin.login", pkt);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -343,13 +366,96 @@ public class BaseClient extends BaseClientImpl {
         return sendPkt(pkt);
     }
 
-    public void sendLogin(String cmd, byte[] body) {
-        byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei);
-        network.sendLoginPacket(pkt);
+    public void writeUni(String cmd, byte[] body) {
+        network.send(BuildUniPkt.build(cmd, body, 0));
     }
 
-    public void sendLogin(String cmd, byte[] body, int type) {
-        byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei, type);
-        network.sendLoginPacket(pkt);
+    public void writeUni(String cmd, byte[] body, int seq) {
+        if (!isOnline) throw new ApiException(-1, "client not online");
+        network.send(BuildUniPkt.build(cmd, body, seq));
+    }
+
+    public void sendLogin(String cmd, byte[] body) {
+        if (isOnline || Login_Lock)
+            return;
+        byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei);
+        byte[] payload = sendPkt(pkt).get();
+        Login_Lock = true;
+        T119 t119 = DecodeLoginResponse.decode(payload, fullDevice);
+        if (t119 != null) {
+            register(false);
+            EventListener.broadcastEvent("internal.login", t119);
+        }
+        Login_Lock = false;
+    }
+
+    private void register(boolean logout) {
+        byte[] pkt = Register.r(uin, logout, fullDevice, platform);
+        byte[] payload = sendPkt(pkt).get();
+        if (logout) return;
+        Map<Object, Object> rsp = Jce.decodeWrapper(payload);
+        boolean result = (int) rsp.get(9) == 1;
+        if (!result) {
+            EventListener.broadcastEvent("internal.error.login", null);
+            return;
+        }
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    byte[] body = Pb.encode(
+                            Node.builder()
+                                    .put(1, 1152)
+                                    .put(2, 9)
+                                    .put(4, new Writer().writeInt(uin).writeByte(0).writeInt(0x19e39).read())
+                                    .build()
+                    );
+                    syncTimeDiff();
+                    sendUni("OidbSvc.0x480_9_IMCore", body);
+                    System.out.println("[发送] 心跳");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, config.hb480_interval, config.hb480_interval);
+
+    }
+
+    public void syncTimeDiff() {
+        byte[] pkt = BuildLoginPacket.build("Client.CorrectTime", Constants.BUF4, uin, platform.subid, fullDevice.imei, 0);
+        try {
+            sendPkt(pkt)
+                    .then((buf) -> {
+                        ByteBuffer b = ByteBuffer.wrap((byte[]) buf);
+                        Sig.timeDiff = b.getInt() - Time.timestamp();
+                        return null;
+                    }).catchException((e) -> {
+                    });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void logout() {
+        register(true);
+        terminate();
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
+    public void terminate() {
+        network.terminate();
+        isOnline = false;
+    }
+
+    public Statistics setStat() {
+        return statistics;
     }
 }
