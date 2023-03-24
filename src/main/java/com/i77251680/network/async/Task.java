@@ -1,9 +1,13 @@
 package com.i77251680.network.async;
 
-public interface Task<V> {
-    V get(V v);
+import java.util.function.Function;
 
-    Task<V> then(AsyncTask.Callback<V> action);
+public interface Task<T> {
+    byte[] get();
 
-    void catchException() throws Exception;
+    T get(T v);
+
+    <R> Task<R> then(Function<T, R> action);
+
+    void catchException(AsyncTask.Callback cb) throws Exception;
 }

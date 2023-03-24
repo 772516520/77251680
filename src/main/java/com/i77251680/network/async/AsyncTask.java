@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 
 public class AsyncTask<T> extends AbstractAsyncTask<T> implements Task<T> {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -15,6 +16,7 @@ public class AsyncTask<T> extends AbstractAsyncTask<T> implements Task<T> {
     private T value;
     private CompletableFuture<T> completableFuture;
     private List<Callback<T>> onFulfilledList = new ArrayList<>();
+    private Exception err;
 
     public interface Callback<U> {
         void run(U v);
@@ -27,16 +29,34 @@ public class AsyncTask<T> extends AbstractAsyncTask<T> implements Task<T> {
     public AsyncTask(Executor<T> executor) {
         Callback<T> resolve = r -> {
             completableFuture = CompletableFuture.supplyAsync(() -> {
-                onFulfilledList.forEach((a) -> {
-                    a.run(CompletableFuture.supplyAsync(() -> r, executorService).join());
-                });
+                onFulfilledList.forEach(a -> a.run(CompletableFuture.supplyAsync(() -> r, executorService).join()));
                 this.value = r;
+                state = FULFILLED;
                 return r;
             }, executorService);
+            synchronized (this) {
+                this.notify();
+            }
         };
         Callback<T> reject = r -> {
+            state = REJECTED;
+            err = new RuntimeException((String) r);
+            synchronized (this) {
+                this.notify();
+            }
         };
         executor.executor(resolve, reject);
+    }
+
+    public synchronized byte[] get() {
+        try {
+            if (completableFuture == null)
+                this.wait();
+            if (state.equals(REJECTED)) throw new RuntimeException(err);
+            return (byte[]) completableFuture.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -45,23 +65,15 @@ public class AsyncTask<T> extends AbstractAsyncTask<T> implements Task<T> {
     }
 
     @Override
-    public Task<T> then(Callback<T> action) {
-        return new AsyncTask<>((res, rej) -> {
-            if (this.state.equals(PENDING)) {
-                onFulfilledList.add((v) -> {
-                    action.run(v);
-                    System.out.println("then->" + v);
-                });
-            }
-            if (this.state.equals(FULFILLED)) {
-                System.out.println("state->" + FULFILLED);
-                action.run(value);
-            }
-        });
+    public <R> Task<R> then(Function<T, R> action) {
+        return new AsyncTask<>(((resolve, reject) -> {
+            if (state.equals(PENDING))
+                onFulfilledList.add((T r) -> resolve.run(action.apply(r)));
+        }));
     }
 
     @Override
-    public void catchException() throws Exception {
-
+    public void catchException(Callback cb) throws Exception {
+        cb.run(err);
     }
 }
