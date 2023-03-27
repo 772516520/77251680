@@ -35,7 +35,7 @@ public class JceWriter {
 
     public byte[] writeInt() {
         body = buffer(4);
-        body.writeInt((Integer) value);
+        body.writeInt(value instanceof Integer ? (int) value : ((Long) value).intValue());
         return body.array();
     }
 
