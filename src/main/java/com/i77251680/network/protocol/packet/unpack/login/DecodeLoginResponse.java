@@ -40,8 +40,10 @@ public class DecodeLoginResponse {
         }
         if (type == 2) {
             Sig.t104 = t.get(0x104).array();
-            if (t.containsKey(0x192))
+            if (t.containsKey(0x192)) {
                 EventListener.broadcastEvent("internal.slider", new String(t.get(0x192).array()));
+                return null;
+            }
             EventListener.broadcastEvent("internal.error.login", LoginError.set(type, "登录失败, 未知格式的验证码"));
             return null;
         }
