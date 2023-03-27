@@ -35,6 +35,7 @@ import static io.netty.buffer.Unpooled.wrappedBuffer;
 @Slf4j
 public class Network {
     private static byte[] buf;
+    private static byte[] buf1 = new byte[0];
     private TimerTask timeoutTimer;
     public boolean auto_search = true;
     public boolean searching = false;
@@ -66,11 +67,16 @@ public class Network {
                 while (!socket.isClosed()) {
                     try {
                         int len = inputStream.read(buf);
-                        byte[] buf_ = Arrays.copyOf(buf, len);
-                        long len_ = wrappedBuffer(buf_).readUnsignedInt();
-                        if (len >= len_)
-                            response(buf_);
-                        Arrays.fill(buf, (byte) 0);
+                        byte[] bytes = Arrays.copyOfRange(buf, 0, len);
+                        buf1 = buf1.length == 0 ? bytes : ArrayUtils.concat(buf1, bytes);
+                        while (buf1.length > 4) {
+                            int len1 = ByteBuffer.wrap(buf1).getInt() & Integer.MAX_VALUE;
+                            if (buf1.length >= len1) {
+                                byte[] pkt = Arrays.copyOfRange(buf1, 4, len1);
+                                buf1 = new byte[0];
+                                response(pkt);
+                            } else break;
+                        }
                     } catch (Exception e) {
                         try {
                             socket.close();
@@ -99,7 +105,7 @@ public class Network {
         }
     }
 
-    public Task<?> sendPkt(byte[] pkt) {
+    public Task<?> sendPkt(byte[] pkt, int timeout) {
         if (!socket.isClosed()) {
             return new AsyncTask<>((res, rej) -> {
                 try {
@@ -116,7 +122,7 @@ public class Network {
                         ++statistics.lost_pkt_cnt;
                         rej.run("packet time out" + Sig.seq);
                     });
-                    timeoutTimer.start(5000);
+                    timeoutTimer.start(timeout * 1000L);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -142,12 +148,8 @@ public class Network {
         }
     }
 
-
     protected void response(byte[] chunk) {
-        ByteBuf byteBuf = wrappedBuffer(chunk);
-        int len = byteBuf.readInt();
-        byte[] pkt = Arrays.copyOfRange(chunk, 4, len);
-        UnpackPacket(pkt);
+        UnpackPacket(chunk);
     }
 
     private SSO parseSSO(byte[] pkt) {
@@ -176,8 +178,7 @@ public class Network {
         if (flag == 0) {
             payload = Arrays.copyOfRange(pkt, headlen + 4, pkt.length);
         } else if (flag == 1) {
-            byte[] b = Zlib.unzip(Arrays.copyOfRange(pkt, headlen + 4, pkt.length));
-            payload = b;
+            payload = Zlib.unzip(Arrays.copyOfRange(pkt, headlen + 4, pkt.length));
         } else if (flag == 8) {
             payload = Arrays.copyOfRange(pkt, headlen, pkt.length);
         } else throw new SSOException("unKnow flag" + flag);
