@@ -14,6 +14,14 @@ public enum Gender {
         return this.sex;
     }
 
+    public static Gender getSex(int sex) {
+        if (sex == 1)
+            return male;
+        else if (sex == 2)
+            return female;
+        return unknown;
+    }
+
     @Override
     public String toString() {
         return this.remark;
