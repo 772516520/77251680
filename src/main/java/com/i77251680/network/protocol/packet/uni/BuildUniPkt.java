@@ -34,7 +34,7 @@ public class BuildUniPkt {
                 .writeInt(0x0_4)
                 .writeWithLength(body)
                 .read();
-        byte[] encrypted = new Tea().encrypt(sso, Sig.d2key);
+        byte[] encrypted = new Tea().encrypt(sso, Sig.d2Key);
         String uin_ = String.valueOf(uin);
         return new Writer()
                 .writeWithLength(

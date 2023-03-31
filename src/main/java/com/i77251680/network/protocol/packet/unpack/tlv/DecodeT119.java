@@ -18,11 +18,11 @@ public class DecodeT119 {
         r.readShort();
         Map<Integer, ByteBuf> t = ReadTlv.read(r);
         Sig.tgt = t.get(0x10a).array();
-        Sig.skey = t.get(0x120).array();
+        Sig.sKey = t.get(0x120).array();
         Sig.d2 = t.get(0x143).array();
-        Sig.d2key = t.get(0x305).array();
-        Sig.tgtgt = Md5Crypto.encrypt(Sig.d2key);
-        byte[] token = ArrayUtils.concat(Sig.d2key, Sig.d2, Sig.tgt);
+        Sig.d2Key = t.get(0x305).array();
+        Sig.tgtgt = Md5Crypto.encrypt(Sig.d2Key);
+        byte[] token = ArrayUtils.concat(Sig.d2Key, Sig.d2, Sig.tgt);
         ByteBuf t11a = t.get(0x11a);
         byte[] t11a_ = t11a.array();
         t11a.readShort();

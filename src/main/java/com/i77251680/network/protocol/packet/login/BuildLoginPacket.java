@@ -81,7 +81,7 @@ public class BuildLoginPacket {
                 .writeWithLength(body)
                 .read();
         if (type == 1) {
-            sso = new Tea().encrypt(sso, Sig.d2key);
+            sso = new Tea().encrypt(sso, Sig.d2Key);
         } else if (type == 0) {
         } else {
             sso = new Tea().encrypt(sso, Constants.BUF16);
