@@ -26,28 +26,24 @@ public class EventListener {
     }
 
     public static void broadcastSSO(SSO event) {
-        ssoListener.forEach(l -> {
+        ssoListener.forEach(l -> pool.execute(() -> {
             l.getListener().accept(event);
             checkOnce("internal.sso", l);
-        });
+        }));
     }
 
     public static void broadcastGroupMsg(Message event) {
-        groupMsgListener.forEach(l -> {
-            pool.execute(() -> {
-                l.getListener().accept(event);
-                checkOnce("message.group", l);
-            });
-        });
+        groupMsgListener.forEach(l -> pool.execute(() -> {
+            l.getListener().accept(event);
+            checkOnce("message.group", l);
+        }));
     }
 
     public static void broadcastPrivateMsg(Message event) {
-        privateMsgListener.forEach(l -> {
-            pool.execute(() -> {
-                l.getListener().accept(event);
-                checkOnce("message.private", l);
-            });
-        });
+        privateMsgListener.forEach(l -> pool.execute(() -> {
+            l.getListener().accept(event);
+            checkOnce("message.private", l);
+        }));
     }
 
     public static <T> void on(String name, Listener<T> listener) {
