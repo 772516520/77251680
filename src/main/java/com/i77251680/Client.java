@@ -5,7 +5,7 @@ import com.i77251680.core.client.Sig;
 import com.i77251680.core.codec.protobuf.Node;
 import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.core.internal.Internal;
-import com.i77251680.core.internal.listeners.InternalListeners;
+import com.i77251680.core.internal.listeners.RegisterListeners;
 import com.i77251680.crypto.md5.Md5Crypto;
 import com.i77251680.entity.config.Config;
 import com.i77251680.entity.contacts.StrangerInfo;
@@ -34,7 +34,7 @@ public class Client extends BaseClient {
     public String nickname = null;
     public OnlineStatus onlineStatus = OnlineStatus.EMPTY;
     private byte[] md5pass = null;
-    protected byte[] sync_cookie;
+    public byte[] sync_cookie;
     /**
      * FriendList
      */
@@ -63,7 +63,7 @@ public class Client extends BaseClient {
     public Client(Long uin, Config config) {
         super(uin, config);
         this.uin = uin;
-        InternalListeners.listen(this);
+        RegisterListeners.register(this);
     }
 
     /**
@@ -79,7 +79,6 @@ public class Client extends BaseClient {
         } else {
             fetchQrcode();
         }
-        System.err.println("debug login()");
     }
 
     /**
@@ -170,7 +169,22 @@ public class Client extends BaseClient {
         return this.sendUni(cmd, pkt);
     }
 
-    public Client onOline(Listener listener) {
+    public <T> Client on(String name, Listener<T> listener) {
+        EventListener.addListener(name, listener);
+        return this;
+    }
+
+    public <T> Client off(String name, Listener<T> listener) {
+        EventListener.removeListener(name, listener);
+        return this;
+    }
+
+    public <T> Client broadcast(String name, T event) {
+        EventListener.broadcastEvent(name, event);
+        return this;
+    }
+
+    public Client onOline(Listener<Void> listener) {
         EventListener.addListener("system.online", listener);
         return this;
     }
