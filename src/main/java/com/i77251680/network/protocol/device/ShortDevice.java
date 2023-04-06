@@ -1,6 +1,5 @@
-package com.i77251680.entity.device;
+package com.i77251680.network.protocol.device;
 
-import com.i77251680.core.device.Device;
 import com.i77251680.crypto.md5.Md5Crypto;
 import com.i77251680.utils.HexFormat;
 import io.netty.buffer.ByteBuf;

@@ -1,7 +1,5 @@
-package com.i77251680.core.device;
+package com.i77251680.network.protocol.device;
 
-import com.i77251680.entity.device.FullDevice;
-import com.i77251680.entity.device.ShortDevice;
 import com.i77251680.utils.ArrayUtils;
 import io.netty.buffer.ByteBuf;
 

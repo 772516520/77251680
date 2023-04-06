@@ -1,7 +1,6 @@
-package com.i77251680.entity.device;
+package com.i77251680.network.protocol.device;
 
-import com.i77251680.crypto.md5.Md5Crypto;
-import com.i77251680.utils.ArrayUtils;
+import com.i77251680.utils.HexFormat;
 import com.i77251680.utils.Random;
 
 import java.util.Arrays;
@@ -89,9 +88,10 @@ public class FullDevice {
         apn = "wifi";
         version = new Version(d);
         imsi = Random.randomBytes(16);
-        guid = Md5Crypto.encrypt(
-                ArrayUtils.addAll(d.imei.getBytes(), d.mac_address.getBytes()));
+//        guid = Md5Crypto.encrypt(
+//                ArrayUtils.addAll(d.imei.getBytes(), d.mac_address.getBytes()));
 //        guid = HexFormat.of().parseHex("e1970ccb91dfddadd9f22cf6933ce9fe");
-//        guid = HexFormat.of().parseHex("e1970ccb91dfd8adf9f22cf6933ce9fe");
+        guid = HexFormat.of().parseHex("e19f0cab91dfd8adf9f22cf6983cedfe");
+//        guid = HexFormat.of().parseHex("a1977acb98dfd8adf9f28cd6937ce9fe");
     }
 }

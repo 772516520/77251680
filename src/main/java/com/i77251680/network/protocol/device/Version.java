@@ -1,4 +1,4 @@
-package com.i77251680.entity.device;
+package com.i77251680.network.protocol.device;
 
 public class Version {
     @Override
