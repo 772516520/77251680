@@ -9,10 +9,10 @@ import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.core.codec.protobuf.Proto;
 import com.i77251680.entity.contacts.friend.FriendInfo;
 import com.i77251680.entity.contacts.group.GroupInfo;
-import com.i77251680.entity.device.FullDevice;
 import com.i77251680.entity.enums.Gender;
 import com.i77251680.entity.enums.OnlineStatus;
 import com.i77251680.entity.enums.Platform;
+import com.i77251680.network.protocol.device.FullDevice;
 import com.i77251680.utils.ArrayUtils;
 import com.i77251680.utils.Time;
 
@@ -50,7 +50,7 @@ public class Internal {
         list.add(0);
         list.add(0);
         list.add(0);
-        list.add(248);
+        list.add(46); // 46 ? [10]
         list.add(d.version.sdk);
         list.add(0);
         list.add("");
@@ -63,7 +63,7 @@ public class Internal {
         list.add(d.model);
         list.add(d.version.release);
         list.add(1);
-        list.add(473);
+        list.add(177); // 177? [23]
         list.add(0);
         list.add(null);
         list.add(0);
@@ -97,25 +97,28 @@ public class Internal {
         constantsList.add(13580);
         constantsList.add(13581);
         constantsList.add(13582);
-        FL.add(3);
-        FL.add(1);
-        FL.add(client.uin);
-        FL.add(start);
-        FL.add(limit);
-        FL.add(0);
-        FL.add(1);
-        FL.add(0);
-        FL.add(0);
-        FL.add(0);
-        FL.add(1);
-        FL.add(31);
-        FL.add(null);
-        FL.add(0);
-        FL.add(0);
-        FL.add(0);
-        FL.add(d50);
-        FL.add(null);
-        FL.add(constantsList);
+        FL.add(3); // 0
+        FL.add(1); // 1
+        FL.add(client.uin); // 2
+        FL.add(start); // 3
+        FL.add(limit); // 4
+        FL.add(0); // 5
+        FL.add(1); // 6
+        FL.add(0); // 7
+//        FL.add(100); // 8
+        FL.add(0); // 8
+        FL.add(0); // 9
+        FL.add(1); // 10
+//        FL.add(33); // 11
+        FL.add(31); // 11
+        FL.add(null); // 12
+        FL.add(0); // 13
+        FL.add(0); // 14
+        FL.add(0); // 15
+        FL.add(d50); // 16
+//        FL.add(new byte[0]); // 17
+        FL.add(null); // 17
+        FL.add(constantsList); // 18
         while (true) {
             byte[] FL_ = Jce.encodeStruct(FL);
             byte[] body = Jce.encodeWrapper(FL_, "FL", "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq");
@@ -213,11 +216,11 @@ public class Internal {
         len.putInt(body.length);
         body = ArrayUtils.concat(Constants.BUF4, len.array(), body);
         byte[] payload = client.sendUni("SsoSnsSession.Cmd0x3_SubCmd0x1_FuncGetBlockList", body).get();
-        List pb = (List) ((Proto) Pb.decode(Arrays.copyOfRange(payload, 8, payload.length)).get(1)).get(6);
+        List v = (List) ((Proto) Pb.decode(Arrays.copyOfRange(payload, 8, payload.length)).get(1)).get(6);
         client.blackList.clear();
-        if (pb == null) return;
-        for (Proto p : (List<Proto>) pb) {
-            client.blackList.add((Long) p.get(1));
+        if (v == null) return;
+        for (Proto _ : (List<Proto>) v) {
+            client.blackList.add((Long) _.get(1));
         }
     }
 
