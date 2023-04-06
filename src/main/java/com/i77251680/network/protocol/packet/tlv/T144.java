@@ -2,7 +2,7 @@ package com.i77251680.network.protocol.packet.tlv;
 
 import com.i77251680.core.writer.Writer;
 import com.i77251680.crypto.tea.Tea;
-import com.i77251680.entity.device.FullDevice;
+import com.i77251680.network.protocol.device.FullDevice;
 import com.i77251680.network.protocol.packet.pack.PackTlv;
 
 import java.io.IOException;
