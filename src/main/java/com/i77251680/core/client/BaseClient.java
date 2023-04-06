@@ -8,21 +8,19 @@ import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.core.writer.Writer;
 import com.i77251680.crypto.tea.Tea;
 import com.i77251680.entity.config.Config;
-import com.i77251680.entity.device.FullDevice;
 import com.i77251680.entity.enums.LoginType;
 import com.i77251680.entity.enums.Platform;
 import com.i77251680.entity.enums.QrcodeRetCode;
-import com.i77251680.entity.login.qrcode.QrcodeResult;
-import com.i77251680.entity.packet.sso.T119;
 import com.i77251680.event.EventListener;
 import com.i77251680.event.events.QrcodeErrorEvent;
-import com.i77251680.exceptions.ApiException;
 import com.i77251680.network.Network;
 import com.i77251680.network.async.Task;
+import com.i77251680.network.protocol.device.FullDevice;
 import com.i77251680.network.protocol.packet.login.BuildLoginPacket;
 import com.i77251680.network.protocol.packet.login.PasswordLogin;
 import com.i77251680.network.protocol.packet.login.qrcode.BuildQrcodeLogin;
 import com.i77251680.network.protocol.packet.login.qrcode.BuildQrcodePacket;
+import com.i77251680.network.protocol.packet.login.qrcode.QrcodeResult;
 import com.i77251680.network.protocol.packet.login.verify.slider.BuildSubmitSlider;
 import com.i77251680.network.protocol.packet.login.verify.sms.BuildSendSmsCode;
 import com.i77251680.network.protocol.packet.login.verify.sms.BuildSubmitSmsCode;
@@ -31,6 +29,7 @@ import com.i77251680.network.protocol.packet.register.Register;
 import com.i77251680.network.protocol.packet.tlv.*;
 import com.i77251680.network.protocol.packet.uni.BuildUniPkt;
 import com.i77251680.network.protocol.packet.unpack.login.DecodeLoginResponse;
+import com.i77251680.network.protocol.packet.unpack.login.T119;
 import com.i77251680.network.protocol.packet.unpack.tlv.ReadTlv;
 import com.i77251680.utils.Time;
 import io.netty.buffer.ByteBuf;
@@ -101,7 +100,7 @@ public class BaseClient extends BaseClientImpl {
                     uin,
                     platform.subid,
                     fullDevice.imei);
-            byte[] payload = network.sendPkt(pkt).get();
+            byte[] payload = network.sendPkt(pkt, 5).get();
             payload = new Tea().decrypt(Arrays.copyOfRange(payload, 16, payload.length - 1), Sig.shareKey);
             ByteBuf buf = wrappedBuffer(payload);
             buf.readBytes(54);
@@ -211,8 +210,8 @@ public class BaseClient extends BaseClientImpl {
                     .writeTlv(Constants.BUF0)
                     .writeShort(0)
                     .read();
-            byte[] pkt = BuildQrcodePacket.build(0x12, 0x6200, body, uin, platform.subid, fullDevice.imei);
-            byte[] payload = network.sendPkt(pkt).get();
+            byte[] pkt = BuildQrcodePacket.build(0x12, 0x6200, body, uin, platform.subid, fullDevice.imei); // 查询扫码结果
+            byte[] payload = sendPkt(pkt, 5).get();
             payload = new Tea().decrypt(Arrays.copyOfRange(payload, 16, payload.length - 1), Sig.shareKey);
             ByteBuf buf = wrappedBuffer(payload);
             buf.readBytes(48);
@@ -357,29 +356,33 @@ public class BaseClient extends BaseClientImpl {
     }
 
     @Override
-    public Task<?> sendPkt(byte[] pkt) {
-        return network.sendPkt(pkt);
+    public Task<?> sendPkt(byte[] pkt, int timeout) {
+        return network.sendPkt(pkt, timeout);
     }
 
     public Task<?> sendUni(String cmd, byte[] body) {
         byte[] pkt = BuildUniPkt.build(cmd, body, uin);
-        return sendPkt(pkt);
+        return sendPkt(pkt, 5);
+    }
+
+    public Task<?> sendUni(String cmd, byte[] body, int timeout) {
+        byte[] pkt = BuildUniPkt.build(cmd, body, uin);
+        return sendPkt(pkt, timeout);
     }
 
     public void writeUni(String cmd, byte[] body) {
-        network.send(BuildUniPkt.build(cmd, body, 0));
+        network.send(BuildUniPkt.build(cmd, body, uin));
     }
 
     public void writeUni(String cmd, byte[] body, int seq) {
-        if (!isOnline) throw new ApiException(-1, "client not online");
-        network.send(BuildUniPkt.build(cmd, body, seq));
+        network.send(BuildUniPkt.build(cmd, body, uin, seq));
     }
 
     public void sendLogin(String cmd, byte[] body) {
         if (isOnline || Login_Lock)
             return;
         byte[] pkt = BuildLoginPacket.build(cmd, body, uin, platform.subid, fullDevice.imei);
-        byte[] payload = sendPkt(pkt).get();
+        byte[] payload = sendPkt(pkt, 5).get();
         Login_Lock = true;
         T119 t119 = DecodeLoginResponse.decode(payload, fullDevice);
         if (t119 != null) {
@@ -391,7 +394,7 @@ public class BaseClient extends BaseClientImpl {
 
     private void register(boolean logout) {
         byte[] pkt = Register.r(uin, logout, fullDevice, platform);
-        byte[] payload = sendPkt(pkt).get();
+        byte[] payload = sendPkt(pkt, 10).get();
         if (logout) return;
         Map<Object, Object> rsp = Jce.decodeWrapper(payload);
         boolean result = (int) rsp.get(9) == 1;
@@ -425,7 +428,7 @@ public class BaseClient extends BaseClientImpl {
     public void syncTimeDiff() {
         byte[] pkt = BuildLoginPacket.build("Client.CorrectTime", Constants.BUF4, uin, platform.subid, fullDevice.imei, 0);
         try {
-            sendPkt(pkt)
+            sendPkt(pkt, 5)
                     .then((buf) -> {
                         ByteBuffer b = ByteBuffer.wrap((byte[]) buf);
                         Sig.timeDiff = b.getInt() - Time.timestamp();
