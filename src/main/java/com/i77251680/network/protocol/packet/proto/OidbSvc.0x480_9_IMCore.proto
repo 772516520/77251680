@@ -1,8 +1,0 @@
-syntax = "proto2";
-option java_outer_classname = "OidbSvc_0x480_9_IMCore";
-
-message hb480 {
-  required int32 const1152 = 1;
-  required int32 const9 = 2;
-  required bytes buf = 3;
-}
