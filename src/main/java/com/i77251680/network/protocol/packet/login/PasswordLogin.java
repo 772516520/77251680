@@ -1,8 +1,8 @@
 package com.i77251680.network.protocol.packet.login;
 
 import com.i77251680.core.writer.Writer;
-import com.i77251680.entity.device.FullDevice;
 import com.i77251680.entity.enums.LoginType;
+import com.i77251680.network.protocol.device.FullDevice;
 import com.i77251680.network.protocol.packet.pack.PackTlv;
 import com.i77251680.network.protocol.packet.tlv.*;
 

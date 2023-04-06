@@ -4,7 +4,7 @@ import com.i77251680.core.codec.jce.Jce;
 import com.i77251680.core.codec.protobuf.Node;
 import com.i77251680.core.codec.protobuf.NodeList;
 import com.i77251680.core.codec.protobuf.Pb;
-import com.i77251680.entity.device.FullDevice;
+import com.i77251680.network.protocol.device.FullDevice;
 import com.i77251680.utils.Time;
 
 import java.util.ArrayList;

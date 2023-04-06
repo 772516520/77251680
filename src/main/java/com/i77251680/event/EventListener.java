@@ -1,7 +1,7 @@
 package com.i77251680.event;
 
-import com.i77251680.entity.packet.sso.SSO;
 import com.i77251680.message.Message;
+import com.i77251680.network.protocol.packet.Packet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class EventListener {
         privateMsgListener.add(Listeners.add("message.private", listener));
     }
 
-    public static void broadcastSSO(SSO event) {
+    public static void broadcastPacket(Packet event) {
         ssoListener.forEach(l -> pool.execute(() -> {
             l.getListener().accept(event);
             checkOnce("internal.sso", l);
