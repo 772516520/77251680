@@ -1,4 +1,4 @@
-package com.i77251680.entity.login.qrcode;
+package com.i77251680.network.protocol.packet.login.qrcode;
 
 public class QrcodeResult {
     public int retcode;

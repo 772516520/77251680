@@ -3,7 +3,7 @@ package com.i77251680.network.protocol.packet.unpack.tlv;
 import com.i77251680.core.client.Sig;
 import com.i77251680.crypto.md5.Md5Crypto;
 import com.i77251680.crypto.tea.Tea;
-import com.i77251680.entity.packet.sso.T119;
+import com.i77251680.network.protocol.packet.unpack.login.T119;
 import com.i77251680.utils.ArrayUtils;
 import io.netty.buffer.ByteBuf;
 
