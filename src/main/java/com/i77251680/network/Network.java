@@ -5,12 +5,11 @@ import com.i77251680.core.client.Sig;
 import com.i77251680.core.client.Statistics;
 import com.i77251680.core.codec.jce.Jce;
 import com.i77251680.crypto.tea.Tea;
-import com.i77251680.entity.packet.sso.SSO;
 import com.i77251680.event.EventListener;
 import com.i77251680.exceptions.PacketException;
-import com.i77251680.exceptions.SSOException;
 import com.i77251680.network.async.AsyncTask;
 import com.i77251680.network.async.Task;
+import com.i77251680.network.protocol.packet.Packet;
 import com.i77251680.utils.ArrayUtils;
 import com.i77251680.utils.HexFormat;
 import com.i77251680.utils.Time;
@@ -152,14 +151,14 @@ public class Network {
         UnpackPacket(chunk);
     }
 
-    private SSO parseSSO(byte[] pkt) {
+    private Packet parsePacket(byte[] pkt) {
         ByteBuffer buf = ByteBuffer.wrap(pkt);
         final int headlen = buf.getInt();
         final int seq = buf.getInt();
         int retcode = buf.getInt();
         if (retcode != 0) {
             EventListener.broadcastEvent("internal.error.login", null);
-            throw new SSOException("unsuccessful retcode" + retcode);
+            throw new PacketException("unsuccessful retcode" + retcode);
         }
         int offset = buf.getInt() + 12;
         buf.rewind();
@@ -181,8 +180,8 @@ public class Network {
             payload = Zlib.unzip(Arrays.copyOfRange(pkt, headlen + 4, pkt.length));
         } else if (flag == 8) {
             payload = Arrays.copyOfRange(pkt, headlen, pkt.length);
-        } else throw new SSOException("unKnow flag" + flag);
-        return new SSO(cmd, seq, payload);
+        } else throw new PacketException("unKnow flag" + flag);
+        return new Packet(cmd, seq, payload);
     }
 
     private void UnpackPacket(byte[] pkt) {
@@ -199,7 +198,7 @@ public class Network {
                 decrypted = encrypted;
                 break;
             case 1:
-                decrypted = new Tea().decrypt(encrypted, Sig.d2key);
+                decrypted = new Tea().decrypt(encrypted, Sig.d2Key);
                 break;
             case 2:
                 decrypted = new Tea().decrypt(encrypted, Constants.BUF16);
@@ -208,12 +207,12 @@ public class Network {
                 EventListener.broadcastEvent("internal.error.login", null);
                 throw new PacketException("unKnow flag" + flag);
         }
-        SSO sso = parseSSO(decrypted);
-        System.out.println("[recv] " + sso.cmd);
-        if (handle.containsKey(sso.seq))
-            handle.get(Sig.seq).run(sso.payload);
+        Packet packet = parsePacket(decrypted);
+        System.out.println("[recv] " + packet.cmd);
+        if (handle.containsKey(packet.seq))
+            handle.get(Sig.seq).run(packet.payload);
         else
-            EventListener.broadcastSSO(sso);
+            EventListener.broadcastPacket(packet);
     }
 
     public void terminate() {
