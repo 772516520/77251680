@@ -6,34 +6,34 @@ import com.i77251680.core.client.Sig;
 import com.i77251680.core.codec.jce.Jce;
 import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.core.codec.protobuf.Proto;
-import com.i77251680.entity.packet.sso.SSO;
 import com.i77251680.event.EventListener;
 import com.i77251680.network.highway.BigData;
+import com.i77251680.network.protocol.packet.Packet;
 import com.i77251680.utils.IP;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class SSOListener {
-    private SSOListener(Client client) {
-        EventListener.on("internal.sso", (SSO sso) -> {
-            switch (sso.cmd) {
+public class PacketListener {
+    private PacketListener(Client client) {
+        EventListener.on("internal.sso", (Packet packet) -> {
+            switch (packet.cmd) {
                 case "StatSvc.ReqMSFOffline":
                 case "MessageSvc.PushForceOffline": {
-                    Map<Object, Object> nested = Jce.decodeWrapper(sso.payload);
+                    Map<Object, Object> nested = Jce.decodeWrapper(packet.payload);
                     String msg = nested.containsKey(4) ? "[" + nested.get(4) + "]" + nested.get(3) : "[" + nested.get(1) + "]" + nested.get(2);
                     EventListener.broadcastEvent("internal.kickoff", msg);
                     break;
                 }
                 case "QualityTest.PushList":
                 case "OnlinePush.SidTicketExpired": {
-                    client.writeUni(sso.cmd, Constants.BUF0, Sig.seq);
+                    client.writeUni(packet.cmd, Constants.BUF0, Sig.seq);
                     break;
                 }
                 case "ConfigPushSvc.PushReq": {
                     try {
-                        byte[] payload = sso.payload;
+                        byte[] payload = packet.payload;
                         if (payload[0] == 0)
                             payload = Arrays.copyOfRange(payload, 4, payload.length);
                         Map<Object, Object> nested = Jce.decodeWrapper(payload);
@@ -59,6 +59,6 @@ public class SSOListener {
     }
 
     public static void listen(Client client) {
-        new SSOListener(client);
+        new PacketListener(client);
     }
 }
