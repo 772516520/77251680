@@ -13,7 +13,7 @@ public class RegisterListeners {
         QrcodeListener.listen(client);
         QrcodeErrorListener.listen(client);
         KickoffListener.listen(client);
-        SSOListener.listen(client);
+        PacketListener.listen(client);
         MessageListeners.listen(client);
         PbGetMsgResponse.register(client);
         PrivateMessageHandler.handle(client);

@@ -3,8 +3,9 @@ package com.i77251680.core.internal.listeners;
 import com.i77251680.Client;
 import com.i77251680.entity.enums.Gender;
 import com.i77251680.entity.enums.OnlineStatus;
-import com.i77251680.entity.packet.sso.T119;
 import com.i77251680.event.EventListener;
+import com.i77251680.handler.MessageHandler;
+import com.i77251680.network.protocol.packet.unpack.login.T119;
 
 public class OnlineListener {
     private OnlineListener(Client c) {
@@ -24,6 +25,7 @@ public class OnlineListener {
                 System.out.println(e);
             }
             System.out.printf("加载了%d个好友 %d个群 %d个陌生人\n", c.fl.size(), c.gl.size(), c.sl.size());
+            MessageHandler.handleMessage(c);
             EventListener.broadcastEvent("system.online", null);
         });
     }
