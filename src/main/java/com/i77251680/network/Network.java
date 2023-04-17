@@ -105,21 +105,22 @@ public class Network {
     }
 
     public Task<?> sendPkt(byte[] pkt, int timeout) {
+        int seq = Sig.seq;
         if (!socket.isClosed()) {
             return new AsyncTask<>((res, rej) -> {
                 try {
                     outputStream.write(pkt);
-                    handle.put(Sig.seq, (payload) -> {
-                        handle.remove(Sig.seq);
+                    handle.put(seq, (payload) -> {
+                        handle.remove(seq);
                         timeoutTimer.cancel();
                         res.run(payload);
                     });
                     ++statistics.sent_pkt_cnt;
                     timeoutTimer = new TimerTask(() -> {
-                        handle.remove(Sig.seq);
+                        handle.remove(seq);
                         timeoutTimer.cancel();
                         ++statistics.lost_pkt_cnt;
-                        rej.run("packet time out" + Sig.seq);
+                        rej.run("packet time out" + seq);
                     });
                     timeoutTimer.start(timeout * 1000L);
                 } catch (IOException e) {
@@ -136,8 +137,8 @@ public class Network {
             return new AsyncTask<>((res, rej) -> {
                 try {
                     outputStream.write(pkt);
-                    handle.put(Sig.seq, (payload) -> {
-                        handle.remove(Sig.seq);
+                    handle.put(seq, (payload) -> {
+                        handle.remove(seq);
                         res.run(payload);
                     });
                 } catch (IOException e) {
@@ -210,7 +211,7 @@ public class Network {
         Packet packet = parsePacket(decrypted);
         System.out.println("[recv] " + packet.cmd);
         if (handle.containsKey(packet.seq))
-            handle.get(Sig.seq).run(packet.payload);
+            handle.get(packet.seq).run(packet.payload);
         else
             EventListener.broadcastPacket(packet);
     }
