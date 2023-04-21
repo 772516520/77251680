@@ -2,10 +2,8 @@ package com.i77251680.core.codec.protobuf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 public class PbWriter {
-    private ByteBuffer buffer;
     private final ByteArrayOutputStream b;
 
     public PbWriter() {
