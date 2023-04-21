@@ -44,7 +44,7 @@ public class Pb {
         }
     }
 
-    public static Map<?, ?> decode(byte[] encoded) {
+    public static Map<Integer, Object> decode(byte[] encoded) {
         Node node = Node.builder();
         ByteBuffer buf = ByteBuffer.wrap(encoded);
         while (buf.position() < buf.limit()) {
@@ -56,20 +56,22 @@ public class Pb {
     public static void _decode(ByteBuffer buf, Node node) {
         int k = (int) PbReader.readVarint(buf);
         int fieldNumber = k >> 3, type = k & 0b111;
+        Object value = null, decoded = null;
         switch (type) {
             case WriteType.VARINT:
-                node.put(fieldNumber, PbReader.readVarint(buf));
+                value = PbReader.readVarint(buf);
                 break;
             case WriteType.BYTES:
-                byte[] r = PbReader.readBytes(buf);
+                value = PbReader.readBytes(buf);
                 try {
-                    node.put(fieldNumber, decode(r));
+                    decoded = decode((byte[]) value);
                 } catch (Exception e) {
-                    node.put(fieldNumber, r);
                 }
+                value = new Proto((byte[]) value, decoded);
                 break;
             case WriteType.FIXED32:
-                node.put(fieldNumber, PbReader.readFixed32(buf));
+                value = PbReader.readFixed32(buf);
         }
+        node.put(fieldNumber, value);
     }
 }
