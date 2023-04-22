@@ -8,7 +8,7 @@ import com.i77251680.network.protocol.packet.Packet;
 
 public class MessageListeners {
     private MessageListeners(Client client) {
-        EventListener.on("internal.sso", (Packet packet) -> {
+        EventListener.on("internal.packet", (Packet packet) -> {
             String cmd = packet.cmd;
             int seq = packet.seq;
             if (!cmd.equals("MessageSvc.PushNotify")) return;

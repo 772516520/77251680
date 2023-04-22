@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class EventListener {
     private static final ExecutorService pool = new ThreadPoolExecutor(10, Integer.MAX_VALUE, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5));
-    private static List<Listeners> ssoListener = new ArrayList<>();
+    private static List<Listeners> packetListener = new ArrayList<>();
     private static List<Listeners> groupMsgListener = new ArrayList<>();
     private static List<Listeners> privateMsgListener = new ArrayList<>();
     private static List<Listeners> listeners = new ArrayList<>();
@@ -21,14 +21,14 @@ public class EventListener {
         groupMsgListener.add(Listeners.add("message.group", listener));
     }
 
-    static <T extends Event> void addPrivateMsgListener(Listener<T> listener) {
+    public static <T extends Event> void addPrivateMsgListener(Listener<T> listener) {
         privateMsgListener.add(Listeners.add("message.private", listener));
     }
 
     public static void broadcastPacket(Packet event) {
-        ssoListener.forEach(l -> pool.execute(() -> {
+        packetListener.forEach(l -> pool.execute(() -> {
             l.getListener().accept(event);
-            checkOnce("internal.sso", l);
+            checkOnce("internal.packet", l);
         }));
     }
 
@@ -51,8 +51,8 @@ public class EventListener {
             groupMsgListener.add(Listeners.add(name, listener));
         else if (name.equals("message.private"))
             privateMsgListener.add(Listeners.add(name, listener));
-        else if (name.equals("internal.sso"))
-            ssoListener.add(Listeners.add(name, listener));
+        else if (name.equals("internal.packet"))
+            packetListener.add(Listeners.add(name, listener));
         else
             addListener(name, listener);
     }
@@ -62,8 +62,8 @@ public class EventListener {
             groupMsgListener.add(Listeners.once(name, listener));
         else if (name.equals("message.private"))
             privateMsgListener.add(Listeners.once(name, listener));
-        else if (name.equals("internal.sso"))
-            ssoListener.add(Listeners.once(name, listener));
+        else if (name.equals("internal.packet"))
+            packetListener.add(Listeners.once(name, listener));
         else
             listeners.add(Listeners.once(name, listener));
 
@@ -86,7 +86,7 @@ public class EventListener {
         });
     }
 
-    private static void checkOnce(String name, Listeners l) {
+    private static void checkOnce(String name, Listeners<?> l) {
         if (l.isOnce()) removeListener(name, l.getListener());
     }
 
@@ -101,10 +101,10 @@ public class EventListener {
                 if (ls.getListener().equals(listener))
                     privateMsgListener.remove(listener);
             });
-        else if (name.equals("internal.sso"))
-            ssoListener.forEach(ls -> {
+        else if (name.equals("internal.packet"))
+            packetListener.forEach(ls -> {
                 if (ls.getListener().equals(listener))
-                    ssoListener.remove(listener);
+                    packetListener.remove(listener);
             });
         else
             listeners.forEach(ls -> {

@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class PacketListener {
     private PacketListener(Client client) {
-        EventListener.on("internal.sso", (Packet packet) -> {
+        EventListener.on("internal.packet", (Packet packet) -> {
             switch (packet.cmd) {
                 case "StatSvc.ReqMSFOffline":
                 case "MessageSvc.PushForceOffline": {
