@@ -4,13 +4,11 @@ import com.i77251680.Client;
 import com.i77251680.core.codec.protobuf.Node;
 import com.i77251680.core.codec.protobuf.Pb;
 import com.i77251680.network.protocol.sync.BuildSyncCookie;
-import com.i77251680.utils.HexFormat;
 
 public class MessageHandler {
     public static void handleMessage(Client client) {
         if (client.sync_cookie == null)
             client.sync_cookie = BuildSyncCookie.build();
-        System.err.println(HexFormat.of().formatHex(client.sync_cookie) + "   cookie push");
         byte[] body = Pb.encode(Node.builder()
                 .put(1, 0)
                 .put(2, client.sync_cookie)
